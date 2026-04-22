@@ -9,4 +9,10 @@ router.post("/apply", verifyToken, applicationController.applyJob);
 // My Applications (Student)
 router.get("/my", verifyToken, applicationController.getMyApplications);
 
+router.get(
+  "/job/:job_id",
+  verifyToken,
+ applicationController.getApplicantsByJob
+);
+
 module.exports = router;

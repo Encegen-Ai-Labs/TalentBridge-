@@ -22,6 +22,8 @@ app.use("/api/jobs", jobRoutes);
 const applicationRoutes = require("./routes/application.routes");
 app.use("/api/applications", applicationRoutes);
 
+const tpoRoutes = require("./routes/tpo.routes");
+app.use("/api/tpo", tpoRoutes);
 
 app.get("/", (req, res) => {
   res.send("Backend Running 🚀");
