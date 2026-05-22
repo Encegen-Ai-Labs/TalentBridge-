@@ -1,0 +1,424 @@
+/* Post Opportunity Layout */
+.post-job-page {
+  background-color: #f8fafc;
+  min-height: calc(100vh - 70px);
+  padding: 3rem 1.5rem;
+}
+
+.post-job-container {
+  max-width: 960px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border-radius: var(--radius-xl);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--border-color);
+  padding: 3rem;
+}
+
+/* Breadcrumbs navigation */
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.825rem;
+  color: var(--text-light);
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumbs a {
+  color: var(--text-light);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+
+.breadcrumbs a:hover {
+  color: var(--primary-color);
+}
+
+.breadcrumbs .separator {
+  color: #cbd5e1;
+}
+
+.breadcrumbs .active-breadcrumb {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+/* Page Headers */
+.page-header {
+  margin-bottom: 2.5rem;
+}
+
+.form-title {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--primary-color); /* Vibrant Figma Green title */
+  letter-spacing: -0.75px;
+  margin-bottom: 0.5rem;
+}
+
+.form-subtitle {
+  color: var(--text-light);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Form Styles */
+.post-job-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.form-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.form-input, .form-select, .form-textarea {
+  padding: 0.75rem 1rem;
+  font-size: 0.925rem;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: #ffffff;
+  color: var(--text-dark);
+  transition: all 0.25s ease;
+}
+
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.12);
+}
+
+.form-input::placeholder, .form-textarea::placeholder {
+  color: #cbd5e1;
+}
+
+/* Salary Inputs Styles */
+.salary-inputs {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+}
+
+.salary-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.to-divider {
+  font-size: 0.825rem;
+  font-weight: 600;
+  color: var(--text-light);
+  text-transform: lowercase;
+}
+
+/* Custom Textarea Editor toolbar headers */
+.desc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.editor-controls {
+  display: flex;
+  gap: 0.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: #f8fafc;
+  overflow: hidden;
+}
+
+.editor-btn {
+  border: none;
+  background: none;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8rem;
+  color: #475569;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.editor-btn:hover {
+  background-color: #cbd5e1;
+  color: var(--text-dark);
+}
+
+.editor-btn:not(:last-child) {
+  border-right: 1px solid var(--border-color);
+}
+
+/* Required Skills with live tags */
+.skills-tags-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+
+.skill-tag {
+  background-color: #e8f5e9; /* Pastel Green */
+  color: #2e7d32; /* Strong Green text */
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid #c8e6c9;
+}
+
+.remove-skill-btn {
+  border: none;
+  background: none;
+  color: #81c784;
+  font-size: 1rem;
+  font-weight: 800;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+}
+
+.remove-skill-btn:hover {
+  color: #2e7d32;
+}
+
+/* Banners overlay sections */
+.form-banner-split {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.boost-banner {
+  background-color: #f0fdf4; /* Very soft green */
+  border: 1.5px solid #dcfce7;
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.boost-icon {
+  font-size: 1.5rem;
+}
+
+.boost-content strong {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #14532d;
+  margin-bottom: 0.25rem;
+}
+
+.boost-content p {
+  font-size: 0.8rem;
+  color: #166534;
+  line-height: 1.4;
+  margin-bottom: 0;
+}
+
+.boost-content a {
+  color: var(--primary-color);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.boost-content a:hover {
+  text-decoration: underline;
+}
+
+.quick-tips-banner {
+  background-color: #f8fafc;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+}
+
+.quick-tips-banner strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.5px;
+}
+
+.quick-tips-banner ul {
+  padding-left: 1.15rem;
+  margin-bottom: 0;
+  list-style-type: disc;
+}
+
+.quick-tips-banner li {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  line-height: 1.5;
+  margin-bottom: 0.25rem;
+}
+
+/* Action Footer layout matching Figma exactly */
+.form-action-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+  padding-top: 2rem;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.footer-status-msg {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #16a34a;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.green-check {
+  background-color: #16a34a;
+  color: #ffffff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+}
+
+.footer-buttons {
+  display: flex;
+  gap: 1rem;
+}
+
+.btn-draft {
+  padding: 0.75rem 1.5rem;
+  background-color: #ffffff;
+  color: var(--text-dark);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.925rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-draft:hover {
+  background-color: #f1f5f9;
+  border-color: #cbd5e1;
+}
+
+.btn-publish {
+  padding: 0.75rem 1.75rem;
+  background-color: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 0.925rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(34, 197, 94, 0.15);
+}
+
+.btn-publish:hover:not(:disabled) {
+  background-color: var(--primary-hover);
+  transform: translateY(-0.5px);
+  box-shadow: 0 10px 15px -3px rgba(34, 197, 94, 0.25);
+}
+
+.btn-publish:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Responsiveness */
+@media (max-width: 900px) {
+  .form-banner-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .post-job-container {
+    padding: 1.5rem;
+  }
+  
+  .form-title {
+    font-size: 1.65rem;
+  }
+  
+  .form-action-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .footer-buttons {
+    width: 100%;
+  }
+  
+  .btn-draft, .btn-publish {
+    flex: 1;
+    text-align: center;
+    padding: 0.85rem;
+  }
+}
+
+/* Skills Autocomplete Dropdown styles */
+.skills-dropdown-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.skills-autocomplete-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: #ffffff;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  max-height: 220px;
+  overflow-y: auto;
+  z-index: 100;
+  margin-top: 4px;
+}
+
+.skills-dropdown-item {
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  color: var(--text-dark);
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  text-align: left;
+}
+
+.skills-dropdown-item:hover {
+  background-color: #ecfdf5;
+  color: var(--primary-color);
+}

@@ -15,4 +15,9 @@ router.get(
  applicationController.getApplicantsByJob
 );
 
+router.post(
+  "/apply-shared",
+  verifyToken,
+  applicationController.applySharedJob
+);
 module.exports = router;

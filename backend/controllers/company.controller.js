@@ -42,6 +42,105 @@ exports.createCompanyProfile = (req, res) => {
     }
   );
 };
+
+// ===============================
+// GET COMPANY DASHBOARD STATS
+// ===============================
+exports.getDashboardStats = (req, res) => {
+  const user_id = req.user.user_id;
+
+  db.query("SELECT * FROM company WHERE user_id = ?", [user_id], (err, compRes) => {
+    if (err) return res.status(500).json(err);
+
+    if (compRes.length === 0) {
+      return res.json({
+        company_name: "New Partner",
+        totalJobs: 0,
+        totalApplications: 0,
+        totalInvites: 0,
+        totalHirings: 0,
+        recentApplicants: [],
+        recentJobs: []
+      });
+    }
+
+    const company = compRes[0];
+    const company_id = company.company_id;
+
+    const qJobs = "SELECT COUNT(*) AS count FROM jobs WHERE company_id = ?";
+    const qApps = "SELECT COUNT(*) AS count FROM applications a JOIN jobs j ON a.job_id = j.job_id WHERE j.company_id = ?";
+    const qInvites = "SELECT COUNT(*) AS count FROM campus_drive_requests WHERE company_id = ?";
+    const qHirings = "SELECT COUNT(*) AS count FROM applications a JOIN jobs j ON a.job_id = j.job_id WHERE j.company_id = ? AND a.status = 'selected'";
+    
+    const qRecentApplicants = `
+      SELECT 
+        a.application_id,
+        a.status,
+        a.applied_at,
+        j.title AS job_title,
+        COALESCE(u.name, 'Candidate') AS student_name,
+        COALESCE(u.email, 'Not Provided') AS student_email,
+        COALESCE(s.branch, 'General') AS branch,
+        COALESCE(s.year, 'N/A') AS year
+      FROM applications a
+      JOIN jobs j ON a.job_id = j.job_id
+      LEFT JOIN users u ON a.student_id = u.user_id
+      LEFT JOIN student s ON u.user_id = s.user_id OR a.student_id = s.student_id
+      WHERE j.company_id = ?
+      ORDER BY a.applied_at DESC
+      LIMIT 5
+    `;
+
+    const qRecentJobs = `
+      SELECT 
+        j.job_id, 
+        j.title, 
+        j.job_type, 
+        j.location, 
+        j.status, 
+        j.created_at,
+        (SELECT COUNT(*) FROM applications a WHERE a.job_id = j.job_id) AS applications_count
+      FROM jobs j
+      WHERE j.company_id = ?
+      ORDER BY j.created_at DESC
+      LIMIT 5
+    `;
+
+    db.query(qJobs, [company_id], (err, jobsRes) => {
+      if (err) return res.status(500).json(err);
+      
+      db.query(qApps, [company_id], (err, appsRes) => {
+        if (err) return res.status(500).json(err);
+        
+        db.query(qInvites, [company_id], (err, invitesRes) => {
+          if (err) return res.status(500).json(err);
+          
+          db.query(qHirings, [company_id], (err, hiringsRes) => {
+            if (err) return res.status(500).json(err);
+            
+            db.query(qRecentApplicants, [company_id], (err, recentAppsRes) => {
+              if (err) return res.status(500).json(err);
+              
+              db.query(qRecentJobs, [company_id], (err, recentJobsRes) => {
+                if (err) return res.status(500).json(err);
+
+                res.json({
+                  company_name: company.company_name,
+                  totalJobs: jobsRes[0].count,
+                  totalApplications: appsRes[0].count,
+                  totalInvites: invitesRes[0].count,
+                  totalHirings: hiringsRes[0].count,
+                  recentApplicants: recentAppsRes,
+                  recentJobs: recentJobsRes
+                });
+              });
+            });
+          });
+        });
+      });
+    });
+  });
+};
 exports.getCompanyApplicants = (req, res) => {
   const user_id = req.user.user_id;
 
@@ -54,18 +153,18 @@ exports.getCompanyApplicants = (req, res) => {
       j.job_id,
       j.title AS job_title,
 
-      s.student_id,
-      s.branch,
-      s.year,
-      s.skills,
+      COALESCE(s.student_id, 0) AS student_id,
+      COALESCE(s.branch, 'General') AS branch,
+      COALESCE(s.year, 'N/A') AS year,
+      COALESCE(s.skills, '') AS skills,
 
-      u.name,
-      u.email
+      COALESCE(u.name, 'Candidate') AS name,
+      COALESCE(u.email, 'Not Provided') AS email
 
     FROM applications a
     JOIN jobs j ON a.job_id = j.job_id
-    JOIN student s ON a.student_id = s.user_id
-    JOIN users u ON s.user_id = u.user_id
+    LEFT JOIN users u ON a.student_id = u.user_id
+    LEFT JOIN student s ON u.user_id = s.user_id OR a.student_id = s.student_id
     JOIN company c ON j.company_id = c.company_id
 
     WHERE c.user_id = ?
@@ -210,3 +309,32 @@ exports.rejectInvite = (req, res) => {
     }
   );
 };
+
+// ===============================
+// CREATE JOB FROM DRIVE
+// ===============================
+exports.createJobFromDrive = (req, res) => {
+  const user_id = req.user.user_id;
+  const { drive_id, title, description, skills } = req.body;
+
+  // get company
+  db.query("SELECT * FROM company WHERE user_id = ?", [user_id], (err, compRes) => {
+    const company = compRes[0];
+
+    const query = `
+      INSERT INTO jobs
+      (company_id, title, description, skills_required, job_mode, drive_id, status)
+      VALUES (?, ?, ?, ?, 'TPO', ?, 'active')
+    `;
+
+    db.query(query, [company.company_id, title, description, skills, drive_id], (err, result) => {
+      if (err) return res.status(500).json(err);
+
+      res.json({
+        message: "Job created for drive",
+        job_id: result.insertId
+      });
+    });
+  });
+};
+

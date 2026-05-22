@@ -35,8 +35,8 @@ exports.createJob = (req, res) => {
     // Step 2: Insert job
     const insertJob = `
       INSERT INTO jobs 
-      (company_id, title, description, skills_required, job_type, location, job_mode)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      (company_id, title, description, skills_required, job_type, location, job_mode, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
     `;
 
     db.query(

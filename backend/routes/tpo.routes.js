@@ -61,4 +61,37 @@ router.get(
   tpoController.getOngoingProcesses
 );
 
+// ================= SHARE JOB =================
+router.post(
+  '/share-job', 
+  verifyToken, 
+  allowTPO, 
+  getTPO, 
+  tpoController.shareJobToStudents
+);
+
+router.get(
+  "/pending-students",
+  verifyToken,
+  allowTPO,
+  getTPO,
+  tpoController.getPendingStudents
+);
+
+
+router.put(
+  "/approve-student",
+  verifyToken,
+  allowTPO,
+  getTPO,
+  tpoController.approveStudent
+);
+
+router.put(
+  "/bulk-approve",
+  verifyToken,
+  allowTPO,
+  getTPO,
+  tpoController.bulkApproveStudents
+);
 module.exports = router;

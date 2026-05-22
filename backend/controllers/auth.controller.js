@@ -2,168 +2,360 @@ const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-// REGISTER
+// ================= REGISTER =================
+
 exports.register = async (req, res) => {
-  const { name, email, password, role, college_name, location } = req.body;
+  console.log("REQ BODY:", req.body);
 
-  if (!name || !email || !password || !role) {
-    return res.status(400).json({ message: "Missing fields" });
-  }
+  try {
+    const {
+      name,
+      email,
+      password,
+      mobile_number,
+      work_status,
+      preferences,
+    } = req.body;
 
-  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, userRes) => {
-    if (err) return res.status(500).json(err);
+    // ================= VALIDATION =================
 
-    if (userRes.length > 0) {
-      return res.status(400).json({ message: "User already exists" });
+    if (
+      !name?.trim() ||
+      !email?.trim() ||
+      !password?.trim() ||
+      !mobile_number?.trim()
+    ) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
     }
 
-    const hashedPassword = await bcrypt.hash(password, 10);
+    // ================= EMAIL CHECK =================
 
     db.query(
-      "INSERT INTO users (name, email, password_hash, role) VALUES (?, ?, ?, ?)",
-      [name, email, hashedPassword, role],
-      (err, userResult) => {
-        if (err) return res.status(500).json(err);
+      "SELECT * FROM users WHERE email = ?",
+      [email],
+      async (err, existingUser) => {
+        if (err) {
+          console.log("DB ERROR:", err);
 
-        const user_id = userResult.insertId;
-
-        // ✅ ONLY TPO FLOW
-       console.log("STEP 1: User inserted");
-
-if (role === "tpo") {
-  console.log("STEP 2: TPO block entered");
-
-  db.query("SELECT * FROM college WHERE college_name = ?", [college_name], (err, collegeRes) => {
-    console.log("STEP 3: College query executed");
-
-    if (err) {
-      console.log("COLLEGE ERROR:", err);
-      return res.status(500).json(err);
-    }
-
-    console.log("COLLEGE RESULT:", collegeRes);
-
-    const insertCollege = (college_id) => {
-      console.log("STEP 4: inserting TPO");
-
-      db.query(
-        "INSERT INTO tpo (user_id, college_id) VALUES (?, ?)",
-        [user_id, college_id],
-        (err, result) => {
-          if (err) {
-            console.log("TPO INSERT ERROR:", err);
-            return res.status(500).json(err);
-          }
-
-          console.log("TPO INSERT SUCCESS:", result);
-
-          return res.json({
-            message: "TPO created",
-            tpo_id: result.insertId
+          return res.status(500).json({
+            message: "Database error",
           });
         }
-      );
-    };
 
-    if (collegeRes.length > 0) {
-      insertCollege(collegeRes[0].college_id);
-    } else {
-      db.query(
-        "INSERT INTO college (college_name, location) VALUES (?, ?)",
-        [college_name, location || null],
-        (err, result) => {
-          if (err) {
-            console.log("COLLEGE INSERT ERROR:", err);
-            return res.status(500).json(err);
-          }
+        // ================= EMAIL EXISTS =================
 
-          console.log("COLLEGE CREATED:", result.insertId);
-
-          insertCollege(result.insertId);
-        }
-      );
-    }
-  });
-} else {
-          return res.status(201).json({
-            message: "User registered successfully",
-            user_id
+        if (existingUser.length > 0) {
+          return res.status(400).json({
+            message: "Email already exists",
           });
         }
+
+        // ================= HASH PASSWORD =================
+
+        const hashedPassword = await bcrypt.hash(
+          password,
+          10
+        );
+
+        console.log({
+          name,
+          email,
+          mobile_number,
+          work_status,
+        });
+
+        // ================= INSERT QUERY =================
+
+        const insertQuery = `
+          INSERT INTO users
+          (
+            name,
+            email,
+            password_hash,
+            role,
+            mobile_number,
+            work_status
+          )
+          VALUES (?, ?, ?, ?, ?, ?)
+        `;
+
+        // ================= INSERT USER =================
+
+        db.query(
+          insertQuery,
+          [
+            name,
+            email,
+            hashedPassword,
+            "student",
+            mobile_number,
+            work_status || "fresher",
+          ],
+          (err, result) => {
+            if (err) {
+              console.log(
+                "INSERT ERROR:",
+                err
+              );
+
+              return res.status(500).json({
+                message:
+                  "Registration failed",
+              });
+            }
+
+            // ================= SUCCESS =================
+            const userId = result.insertId;
+            const prefString = preferences ? (typeof preferences === 'string' ? preferences : JSON.stringify(preferences)) : null;
+
+            const insertStudentQuery = `
+              INSERT INTO student (user_id, approval_status, preferences)
+              VALUES (?, 'approved', ?)
+            `;
+
+            db.query(insertStudentQuery, [userId, prefString], (err) => {
+              if (err) {
+                console.log("INSERT STUDENT PREFERENCES ERROR:", err);
+              }
+
+              return res.status(201).json({
+                message:
+                  "Registration successful",
+                user_id: userId,
+              });
+            });
+          }
+        );
       }
     );
-  });
-};
+  } catch (error) {
+    console.log("SERVER ERROR:", error);
 
-// helper function
-function createTPO(user_id, college_id, res) {
-db.query(
-  "INSERT INTO tpo (user_id, college_id) VALUES (?, ?)",
-  [user_id, college_id],
-  (err, tpoResult) => {
-    if (err) {
-      console.log("TPO insert error:", err);
-      return res.status(500).json(err);
-    }
-
-    return res.status(201).json({
-      message: "TPO registered successfully",
-      user_id,
-      college_id,
-      tpo_id: tpoResult.insertId
+    return res.status(500).json({
+      message: "Server error",
     });
   }
-);
-}
+};
 
-// LOGIN
+// ================= LOGIN =================
+
 exports.login = (req, res) => {
   const { email, password } = req.body;
 
+  // ================= VALIDATION =================
+
   if (!email || !password) {
-    return res.status(400).json({ message: "Email and password required" });
+    return res.status(400).json({
+      message:
+        "Email and password required",
+    });
   }
 
-  // Find user
-  db.query("SELECT * FROM users WHERE email = ?", [email], async (err, result) => {
-    if (err) return res.status(500).json(err);
+  // ================= FIND USER =================
 
-    if (result.length === 0) {
-      return res.status(400).json({ message: "User not found" });
-    }
+  db.query(
+    "SELECT * FROM users WHERE email = ?",
+    [email],
+    async (err, result) => {
+      if (err) {
+        console.log("LOGIN ERROR:", err);
 
-    const user = result[0];
-
-    try {
-      // Compare password
-      const isMatch = await bcrypt.compare(password, user.password_hash);
-
-      if (!isMatch) {
-        return res.status(400).json({ message: "Invalid credentials" });
+        return res.status(500).json({
+          message: "Database error",
+        });
       }
 
-      // Generate JWT
-      const token = jwt.sign(
-        {
-          user_id: user.user_id,
-          role: user.role
-        },
-        process.env.JWT_SECRET,
-        { expiresIn: "1d" }
-      );
+      // ================= USER NOT FOUND =================
 
-      return res.status(200).json({
-        message: "Login successful",
-        token,
-        user: {
-          id: user.user_id,
-          name: user.name,
-          role: user.role
+      if (result.length === 0) {
+        return res.status(400).json({
+          message: "User not found",
+        });
+      }
+
+      const user = result[0];
+
+      try {
+        // ================= PASSWORD MATCH =================
+
+        const isMatch =
+          await bcrypt.compare(
+            password,
+            user.password_hash
+          );
+
+        if (!isMatch) {
+          return res.status(400).json({
+            message:
+              "Invalid credentials",
+          });
         }
-      });
 
-    } catch (error) {
-      return res.status(500).json(error);
+        // ================= JWT TOKEN =================
+
+        const token = jwt.sign(
+          {
+            user_id: user.user_id,
+            role: user.role,
+          },
+          process.env.JWT_SECRET,
+          {
+            expiresIn: "1d",
+          }
+        );
+
+        // ================= SUCCESS =================
+
+        return res.status(200).json({
+          message: "Login successful",
+          token,
+
+          user: {
+            id: user.user_id,
+            name: user.name,
+            role: user.role,
+          },
+        });
+      } catch (error) {
+        console.log(
+          "LOGIN SERVER ERROR:",
+          error
+        );
+
+        return res.status(500).json({
+          message: "Server error",
+        });
+      }
     }
-  });
+  );
+};
+
+// ================= REGISTER COMPANY =================
+
+exports.registerCompany = async (req, res) => {
+  try {
+    const {
+      name,
+      email,
+      password,
+      mobile_number,
+      company_name,
+      industry,
+    } = req.body;
+
+    // ================= VALIDATION =================
+
+    if (
+      !name?.trim() ||
+      !email?.trim() ||
+      !password?.trim() ||
+      !mobile_number?.trim() ||
+      !company_name?.trim() ||
+      !industry?.trim()
+    ) {
+      return res.status(400).json({
+        message: "All fields are required",
+      });
+    }
+
+    // ================= EMAIL CHECK =================
+
+    db.query(
+      "SELECT * FROM users WHERE email = ?",
+      [email],
+      async (err, existingUser) => {
+        if (err) {
+          console.log("DB ERROR:", err);
+
+          return res.status(500).json({
+            message: "Database error",
+          });
+        }
+
+        // ================= EMAIL EXISTS =================
+
+        if (existingUser.length > 0) {
+          return res.status(400).json({
+            message: "Email already exists",
+          });
+        }
+
+        // ================= HASH PASSWORD =================
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // ================= INSERT USER =================
+
+        const insertUserQuery = `
+          INSERT INTO users
+          (
+            name,
+            email,
+            password_hash,
+            role,
+            mobile_number,
+            work_status
+          )
+          VALUES (?, ?, ?, 'company', ?, 'fresher')
+        `;
+
+        db.query(
+          insertUserQuery,
+          [name, email, hashedPassword, mobile_number],
+          (err, userResult) => {
+            if (err) {
+              console.log("INSERT USER ERROR:", err);
+
+              return res.status(500).json({
+                message: "Registration failed",
+              });
+            }
+
+            const userId = userResult.insertId;
+
+            // ================= INSERT COMPANY =================
+
+            const insertCompanyQuery = `
+              INSERT INTO company
+              (
+                user_id,
+                company_name,
+                industry,
+                verified_status
+              )
+              VALUES (?, ?, ?, 0)
+            `;
+
+            db.query(
+              insertCompanyQuery,
+              [userId, company_name, industry],
+              (err, companyResult) => {
+                if (err) {
+                  console.log("INSERT COMPANY ERROR:", err);
+
+                  return res.status(500).json({
+                    message: "Company profile creation failed",
+                  });
+                }
+
+                return res.status(201).json({
+                  message: "Employer registered successfully",
+                  user_id: userId,
+                  company_id: companyResult.insertId,
+                });
+              }
+            );
+          }
+        );
+      }
+    );
+  } catch (error) {
+    console.log("SERVER ERROR:", error);
+
+    return res.status(500).json({
+      message: "Server error",
+    });
+  }
 };
