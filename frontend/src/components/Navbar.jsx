@@ -7,6 +7,7 @@ const Navbar = () => {
   const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -68,7 +69,11 @@ const Navbar = () => {
   const closeMobileMenu = () => {
     setMobileMenuOpen(false);
   };
-
+const handleSearch = (e) => {
+  if (e.key === 'Enter' && searchQuery.trim()) {
+    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+  }
+};
   return (
     <>
       <nav className="navbar">
@@ -76,7 +81,7 @@ const Navbar = () => {
 
           {/* LOGO */}
           <Link to="/" className="navbar-logo">
-            <span className="logo-text">Intenshalaaa</span>
+            <span className="logo-text">LOGO</span>
           </Link>
 
           {/* DESKTOP LINKS */}
@@ -108,8 +113,8 @@ const Navbar = () => {
                   Jobs
                 </Link>
 
-                <Link to="/courses" className="nav-link">
-                  Courses
+                <Link to="/ContactUs" className="nav-link">
+                  Contact Us
                 </Link>
               </>
             )}
@@ -123,11 +128,17 @@ const Navbar = () => {
               <>
                 {user?.role !== 'company' && (
                   <div className="navbar-search">
-                    <input
+                   <input
                       type="text"
                       placeholder="Search internships, jobs..."
                       className="search-input"
-                    />
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={(e) => {
+                        setSearchQuery(e.target.value);
+                        navigate(`/jobs?search=${encodeURIComponent(e.target.value)}`);
+                      }}
+                     />
                   </div>
                 )}
 
@@ -223,7 +234,7 @@ const Navbar = () => {
                   to="/employer/login"
                   className="btn-employer"
                 >
-                  Employers
+                 For Employers
                 </Link>
 
               </div>

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { createJob } from '../services/api';
+import { createJob, getCompanyProfileStatus } from '../services/api';
 import { toast } from 'react-toastify';
 import './PostJob.css';
 
@@ -24,6 +24,8 @@ const PREDEFINED_SKILLS = [
 export default function PostJob() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [profileCheckLoading, setProfileCheckLoading] = useState(true);
+  const [showProfileModal, setShowProfileModal] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
@@ -32,12 +34,35 @@ export default function PostJob() {
     salaryMin: '',
     salaryMax: '',
     description: '',
+    roleOverview: '',
+    requirements: '',
+    additionalInformation: '',
+    aboutCompany: '',
     jobType: 'internship' // defaults to internship
   });
 
   const [skills, setSkills] = useState(['Figma', 'React', 'Project Management', 'Technical Writing']);
   const [skillInput, setSkillInput] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
+
+  // Check profile status on component mount
+  useEffect(() => {
+    const checkProfileStatus = async () => {
+      try {
+        const status = await getCompanyProfileStatus();
+        if (!status.profile_completed) {
+          setShowProfileModal(true);
+        }
+      } catch (err) {
+        console.error('Error checking profile status:', err);
+        toast.error('Error checking profile status');
+      } finally {
+        setProfileCheckLoading(false);
+      }
+    };
+
+    checkProfileStatus();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -77,9 +102,14 @@ export default function PostJob() {
 
     setLoading(true);
 
-    // Smart JSON serialization for description to hold extra fields cleanly without mutating database schema!
+    // Smart JSON serialization for segregated description fields so the details page
+    // can render Role Overview, Requirements, Additional Information and About Company.
     const complexDescription = JSON.stringify({
-      description: formData.description,
+      description: formData.description || '',
+      role_overview: formData.roleOverview || '',
+      requirements: formData.requirements || '',
+      additional_information: formData.additionalInformation || '',
+      about_company: formData.aboutCompany || '',
       salary_min: formData.salaryMin || 'Negotiable',
       salary_max: formData.salaryMax || 'Not Specified',
       category: formData.category
@@ -116,6 +146,35 @@ export default function PostJob() {
 
   return (
     <div className="post-job-page">
+      {/* Profile Completion Modal */}
+      {showProfileModal && (
+        <div className="modal-overlay">
+          <div className="modal-content">
+            <div className="modal-icon">📋</div>
+            <h2 className="modal-title">Complete Your Company Profile</h2>
+            <p className="modal-subtitle">
+              You must complete your company details before posting jobs.
+            </p>
+            <div className="modal-actions">
+              <button
+                type="button"
+                className="modal-btn-cancel"
+                onClick={() => navigate('/company/dashboard')}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="modal-btn-primary"
+                onClick={() => navigate('/company/profile')}
+              >
+                Complete Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="post-job-container">
         {/* Breadcrumbs */}
         <div className="breadcrumbs">
@@ -218,25 +277,55 @@ export default function PostJob() {
             </div>
           </div>
 
-          {/* Row 3: Job Description */}
+          {/* Row 3: Segregated Job Description Fields */}
           <div className="form-group desc-group">
-            <div className="desc-header">
-              <label className="form-label">Job Description</label>
-              <div className="editor-controls">
-                <button type="button" className="editor-btn" title="Bold"><b>B</b></button>
-                <button type="button" className="editor-btn" title="Bullet List"><b>≡</b></button>
-                <button type="button" className="editor-btn" title="Insert Link"><b>🔗</b></button>
-              </div>
-            </div>
+            <label className="form-label">Role Overview</label>
             <textarea
-              name="description"
+              name="roleOverview"
               className="form-textarea"
-              placeholder="Outline the responsibilities, expectations, and day-to-day for this role..."
-              value={formData.description}
+              placeholder="Describe the role overview and primary responsibilities"
+              value={formData.roleOverview}
               onChange={handleChange}
-              rows="6"
+              rows="4"
               required
-            ></textarea>
+            />
+          </div>
+
+          <div className="form-group desc-group">
+            <label className="form-label">Requirements</label>
+            <textarea
+              name="requirements"
+              className="form-textarea"
+              placeholder="List required skills, qualifications, and experience"
+              value={formData.requirements}
+              onChange={handleChange}
+              rows="4"
+              required
+            />
+          </div>
+
+          <div className="form-group desc-group">
+            <label className="form-label">Additional Information</label>
+            <textarea
+              name="additionalInformation"
+              className="form-textarea"
+              placeholder="Any stipend, perks, or extra info"
+              value={formData.additionalInformation}
+              onChange={handleChange}
+              rows="3"
+            />
+          </div>
+
+          <div className="form-group desc-group">
+            <label className="form-label">About Company (will show on opportunity)</label>
+            <textarea
+              name="aboutCompany"
+              className="form-textarea"
+              placeholder="Short blurb about your company"
+              value={formData.aboutCompany}
+              onChange={handleChange}
+              rows="3"
+            />
           </div>
 
           {/* Row 4: Required Skills */}

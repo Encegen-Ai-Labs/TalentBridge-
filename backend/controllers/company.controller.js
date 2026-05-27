@@ -1,12 +1,24 @@
 const db = require("../config/db");
+const path = require('path');
 
 
 // ===============================
-// CREATE COMPANY PROFILE
+// CREATE/UPDATE COMPANY PROFILE
 // ===============================
 exports.createCompanyProfile = (req, res) => {
   const user_id = req.user.user_id;
-  const { company_name, industry } = req.body;
+  const {
+    company_name,
+    industry,
+    website,
+    phone,
+    location,
+    about,
+    company_size,
+    founded_year,
+    linkedin_url,
+    logo
+  } = req.body;
 
   if (!company_name || !industry) {
     return res.status(400).json({
@@ -20,25 +32,118 @@ exports.createCompanyProfile = (req, res) => {
     (err, result) => {
       if (err) return res.status(500).json(err);
 
-      if (result.length) {
-        return res.status(400).json({
-          message: "Company already exists"
-        });
-      }
+      // Helper function to check if profile is completed
+      const isProfileCompleted = (data) => {
+        return !!(
+          data.company_name &&
+          data.industry &&
+          data.website &&
+          data.phone &&
+          data.location &&
+          data.about &&
+          data.company_size &&
+          data.founded_year &&
+          data.linkedin_url
+        );
+      };
 
-      db.query(
-        `INSERT INTO company (user_id, company_name, industry, verified_status)
-         VALUES (?, ?, ?, 0)`,
-        [user_id, company_name, industry],
-        (err, data) => {
+      if (result.length) {
+        // Update existing profile
+        const profileData = {
+          company_name: company_name || result[0].company_name,
+          industry: industry || result[0].industry,
+          website: website || result[0].website,
+          phone: phone || result[0].phone,
+          location: location || result[0].location,
+          about: about || result[0].about,
+          company_size: company_size || result[0].company_size,
+          founded_year: founded_year || result[0].founded_year,
+          linkedin_url: linkedin_url || result[0].linkedin_url,
+          logo: logo || result[0].logo
+        };
+
+        const profile_completed = isProfileCompleted(profileData) ? 1 : 0;
+
+        const updateQuery = `
+          UPDATE company 
+          SET company_name = ?, industry = ?, website = ?, phone = ?, 
+              location = ?, about = ?, company_size = ?, founded_year = ?, 
+              linkedin_url = ?, logo = ?, profile_completed = ?
+          WHERE user_id = ?
+        `;
+
+        const values = [
+          profileData.company_name,
+          profileData.industry,
+          profileData.website,
+          profileData.phone,
+          profileData.location,
+          profileData.about,
+          profileData.company_size,
+          profileData.founded_year,
+          profileData.linkedin_url,
+          profileData.logo,
+          profile_completed,
+          user_id
+        ];
+
+        db.query(updateQuery, values, (err) => {
           if (err) return res.status(500).json(err);
 
-          res.status(201).json({
-            message: "Company created",
-            company_id: data.insertId
+          res.status(200).json({
+            message: "Company profile updated successfully",
+            profile_completed: profile_completed === 1,
+            company_id: result[0].company_id
           });
-        }
-      );
+        });
+      } else {
+        // Create new profile
+        const profileData = {
+          company_name,
+          industry,
+          website,
+          phone,
+          location,
+          about,
+          company_size,
+          founded_year,
+          linkedin_url,
+          logo
+        };
+
+        const profile_completed = isProfileCompleted(profileData) ? 1 : 0;
+
+        db.query(
+          `INSERT INTO company (
+            user_id, company_name, industry, website, phone, location, 
+            about, company_size, founded_year, linkedin_url, logo, 
+            verified_status, profile_completed
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)`,
+          [
+            user_id,
+            company_name,
+            industry,
+            website || null,
+            phone || null,
+            location || null,
+            about || null,
+            company_size || null,
+            founded_year || null,
+            linkedin_url || null,
+            logo || null,
+            profile_completed
+          ],
+          (err, data) => {
+            if (err) return res.status(500).json(err);
+
+            res.status(201).json({
+              message: "Company profile created successfully",
+              profile_completed: profile_completed === 1,
+              company_id: data.insertId
+            });
+          }
+        );
+      }
     }
   );
 };
@@ -149,6 +254,10 @@ exports.getCompanyApplicants = (req, res) => {
       a.application_id,
       a.status,
       a.applied_at,
+      a.availability,
+      a.resume_option,
+      a.manual_resume_name,
+      a.manual_resume_data,
 
       j.job_id,
       j.title AS job_title,
@@ -157,9 +266,12 @@ exports.getCompanyApplicants = (req, res) => {
       COALESCE(s.branch, 'General') AS branch,
       COALESCE(s.year, 'N/A') AS year,
       COALESCE(s.skills, '') AS skills,
+      s.resume_data,
+      s.resume_url,
 
       COALESCE(u.name, 'Candidate') AS name,
-      COALESCE(u.email, 'Not Provided') AS email
+      COALESCE(u.email, 'Not Provided') AS email,
+      COALESCE(u.mobile_number, 'N/A') AS mobile_number
 
     FROM applications a
     JOIN jobs j ON a.job_id = j.job_id
@@ -338,3 +450,242 @@ exports.createJobFromDrive = (req, res) => {
   });
 };
 
+// ===============================
+// GET PROFILE STATUS
+// ===============================
+exports.getProfileStatus = (req, res) => {
+  const user_id = req.user.user_id;
+
+  db.query(
+    "SELECT profile_completed FROM company WHERE user_id = ?",
+    [user_id],
+    (err, result) => {
+      if (err) return res.status(500).json(err);
+
+      if (!result.length) {
+        return res.status(404).json({ message: "Company not found" });
+      }
+
+      res.json({
+        profile_completed: result[0].profile_completed === 1
+      });
+    }
+  );
+};
+
+// ===============================
+// GET FULL COMPANY PROFILE
+// ===============================
+exports.getCompanyProfile = (req, res) => {
+  const user_id = req.user.user_id;
+
+  db.query("SELECT * FROM company WHERE user_id = ?", [user_id], (err, result) => {
+    if (err) return res.status(500).json(err);
+
+    if (!result.length) return res.status(404).json({ message: 'Company profile not found' });
+
+    const profile = result[0];
+    res.json({ data: profile });
+  });
+};
+
+// ===============================
+// UPDATE COMPANY PROFILE (with uploads)
+// ===============================
+exports.updateCompanyProfile = (req, res) => {
+  const user_id = req.user.user_id;
+
+  // fields from body
+  const {
+    company_name,
+    industry,
+    company_email,
+    hr_contact,
+    website,
+    company_size,
+    founded_year,
+    location,
+    about_company,
+    gst_number,
+    registration_number,
+    pan_number,
+    linkedin_profile,
+    official_website,
+    official_company_email
+  } = req.body;
+
+  // files
+  const files = req.files || {};
+
+  // basic server-side validation
+  if (!company_name || !industry) {
+    return res.status(400).json({ message: 'Company name and industry are required' });
+  }
+
+  // Build profile object
+  const profileData = {
+    company_name,
+    industry,
+    company_email: company_email || null,
+    hr_contact: hr_contact || null,
+    website: website || null,
+    company_size: company_size || null,
+    founded_year: founded_year || null,
+    location: location || null,
+    about_company: about_company || null,
+    gst_number: gst_number || null,
+    registration_number: registration_number || null,
+    pan_number: pan_number || null,
+    linkedin_profile: linkedin_profile || null,
+    official_website: official_website || null,
+    official_company_email: official_company_email || null,
+    gst_certificate: files.gst_certificate && files.gst_certificate[0] ? path.join('uploads','company-documents', path.basename(files.gst_certificate[0].path)) : null,
+    registration_certificate: files.registration_certificate && files.registration_certificate[0] ? path.join('uploads','company-documents', path.basename(files.registration_certificate[0].path)) : null,
+    pan_card: files.pan_card && files.pan_card[0] ? path.join('uploads','company-documents', path.basename(files.pan_card[0].path)) : null,
+    company_logo: files.company_logo && files.company_logo[0] ? path.join('uploads','company-documents', path.basename(files.company_logo[0].path)) : null
+  };
+
+  db.query("SELECT * FROM company WHERE user_id = ?", [user_id], (err, result) => {
+    if (err) return res.status(500).json(err);
+
+    if (result.length) {
+      // update
+      const existing = result[0];
+
+      // Merge existing values for fields not provided or uploaded
+      const mergedData = {
+        company_name: profileData.company_name || existing.company_name,
+        industry: profileData.industry || existing.industry,
+        company_email: profileData.company_email || existing.company_email,
+        hr_contact: profileData.hr_contact || existing.hr_contact,
+        website: profileData.website || existing.website,
+        company_size: profileData.company_size || existing.company_size,
+        founded_year: profileData.founded_year || existing.founded_year,
+        location: profileData.location || existing.location,
+        about_company: profileData.about_company || existing.about_company,
+        gst_number: profileData.gst_number || existing.gst_number,
+        registration_number: profileData.registration_number || existing.registration_number,
+        pan_number: profileData.pan_number || existing.pan_number,
+        linkedin_profile: profileData.linkedin_profile || existing.linkedin_profile,
+        official_website: profileData.official_website || existing.official_website,
+        official_company_email: profileData.official_company_email || existing.official_company_email,
+        gst_certificate: profileData.gst_certificate || existing.gst_certificate,
+        registration_certificate: profileData.registration_certificate || existing.registration_certificate,
+        pan_card: profileData.pan_card || existing.pan_card,
+        company_logo: profileData.company_logo || existing.company_logo
+      };
+
+      const isComplete = !!(
+        mergedData.company_name &&
+        mergedData.industry &&
+        mergedData.company_email &&
+        mergedData.hr_contact &&
+        mergedData.website &&
+        mergedData.company_size &&
+        mergedData.founded_year &&
+        mergedData.location &&
+        mergedData.about_company &&
+        mergedData.linkedin_profile &&
+        mergedData.official_website &&
+        mergedData.official_company_email
+      );
+
+      const updateQuery = `
+        UPDATE company SET
+          company_name = ?, industry = ?, company_email = ?, hr_contact = ?, website = ?,
+          company_size = ?, founded_year = ?, location = ?, about_company = ?,
+          gst_number = ?, registration_number = ?, pan_number = ?, linkedin_profile = ?,
+          official_website = ?, official_company_email = ?, gst_certificate = ?,
+          registration_certificate = ?, pan_card = ?, company_logo = ?, profile_completed = ?
+        WHERE user_id = ?
+      `;
+
+      const values = [
+        mergedData.company_name,
+        mergedData.industry,
+        mergedData.company_email,
+        mergedData.hr_contact,
+        mergedData.website,
+        mergedData.company_size,
+        mergedData.founded_year,
+        mergedData.location,
+        mergedData.about_company,
+        mergedData.gst_number,
+        mergedData.registration_number,
+        mergedData.pan_number,
+        mergedData.linkedin_profile,
+        mergedData.official_website,
+        mergedData.official_company_email,
+        mergedData.gst_certificate,
+        mergedData.registration_certificate,
+        mergedData.pan_card,
+        mergedData.company_logo,
+        isComplete ? 1 : 0,
+        user_id
+      ];
+
+      db.query(updateQuery, values, (err) => {
+        if (err) return res.status(500).json(err);
+
+        return res.json({ message: 'Profile updated', profile_completed: !!isComplete });
+      });
+    } else {
+      // insert new
+      const isComplete = !!(
+        profileData.company_name &&
+        profileData.industry &&
+        profileData.company_email &&
+        profileData.hr_contact &&
+        profileData.website &&
+        profileData.company_size &&
+        profileData.founded_year &&
+        profileData.location &&
+        profileData.about_company &&
+        profileData.linkedin_profile &&
+        profileData.official_website &&
+        profileData.official_company_email
+      );
+
+      const insertQuery = `
+        INSERT INTO company (
+          user_id, company_name, industry, company_email, hr_contact, website,
+          company_size, founded_year, location, about_company,
+          gst_number, registration_number, pan_number, linkedin_profile,
+          official_website, official_company_email, gst_certificate,
+          registration_certificate, pan_card, company_logo, verified_status, profile_completed
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?)
+      `;
+
+      const values = [
+        user_id,
+        profileData.company_name,
+        profileData.industry,
+        profileData.company_email,
+        profileData.hr_contact,
+        profileData.website,
+        profileData.company_size,
+        profileData.founded_year,
+        profileData.location,
+        profileData.about_company,
+        profileData.gst_number,
+        profileData.registration_number,
+        profileData.pan_number,
+        profileData.linkedin_profile,
+        profileData.official_website,
+        profileData.official_company_email,
+        profileData.gst_certificate,
+        profileData.registration_certificate,
+        profileData.pan_card,
+        profileData.company_logo,
+        isComplete ? 1 : 0
+      ];
+
+      db.query(insertQuery, values, (err, data) => {
+        if (err) return res.status(500).json(err);
+
+        return res.status(201).json({ message: 'Profile created', profile_completed: !!isComplete, company_id: data.insertId });
+      });
+    }
+  });
+
+};

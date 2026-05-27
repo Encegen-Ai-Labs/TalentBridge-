@@ -18,8 +18,8 @@ exports.createJob = (req, res) => {
     });
   }
 
-  // Step 1: Get company_id from user_id
-  const getCompany = "SELECT company_id FROM company WHERE user_id = ?";
+  // Step 1: Get company_id and check profile completion from user_id
+  const getCompany = "SELECT company_id, profile_completed FROM company WHERE user_id = ?";
 
   db.query(getCompany, [user_id], (err, result) => {
     if (err) return res.status(500).json(err);
@@ -27,6 +27,13 @@ exports.createJob = (req, res) => {
     if (result.length === 0) {
       return res.status(403).json({
         message: "Only company users can post jobs"
+      });
+    }
+
+    // Check if profile is completed
+    if (!result[0].profile_completed) {
+      return res.status(403).json({
+        message: "Complete company profile first"
       });
     }
 
@@ -78,6 +85,24 @@ exports.getAllJobs = (req, res) => {
     return res.status(200).json({
       total: result.length,
       jobs: result
+    });
+  });
+};
+
+// GET COMPANY INTERNSHIPS (only internships posted by companies)
+exports.getCompanyInternships = (req, res) => {
+  const query = `
+    SELECT j.*, c.company_name
+    FROM jobs j
+    JOIN company c ON j.company_id = c.company_id
+    WHERE j.status = 'active' AND j.job_type = 'internship'
+    ORDER BY j.created_at DESC
+  `;
+  db.query(query, (err, result) => {
+    if (err) return res.status(500).json(err);
+    return res.status(200).json({
+      total: result.length,
+      jobs: result,
     });
   });
 };

@@ -1,0 +1,183 @@
+.contact-page {
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 60px 20px;
+}
+
+.contact-container {
+  max-width: 1180px;
+  margin: auto;
+}
+
+/* TITLE */
+
+.contact-title {
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1e293b;
+
+  margin-bottom: 60px;
+}
+
+/* TOP GRID */
+
+.contact-top-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px;
+
+  margin-bottom: 80px;
+}
+
+/* CARD */
+
+.contact-card {
+  background: white;
+
+  border: 1px solid #e2e8f0;
+  border-radius: 22px;
+
+  padding: 45px 40px;
+
+  box-shadow: 0 4px 14px rgba(0,0,0,0.04);
+
+  text-align: center;
+}
+
+.contact-card h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+
+  color: #1e293b;
+  margin-bottom: 18px;
+}
+
+.contact-card p {
+  color: #64748b;
+  font-size: 1.1rem;
+  line-height: 1.7;
+
+  margin-bottom: 35px;
+}
+
+/* BUTTON */
+
+.contact-btn {
+  width: 100%;
+
+  height: 60px;
+
+  border: none;
+  border-radius: 10px;
+
+  background: #22c55e;
+  color: white;
+
+  font-size: 1.05rem;
+  font-weight: 700;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.contact-btn:hover {
+  background: #16a34a;
+}
+
+/* BOTTOM GRID */
+
+.contact-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 100px;
+}
+
+/* LEFT INFO */
+
+.contact-info h2,
+.contact-address h2 {
+  font-size: 2.3rem;
+  font-weight: 700;
+
+  color: #334155;
+  margin-bottom: 30px;
+}
+
+.info-group {
+  margin-bottom: 34px;
+}
+
+.info-group h4 {
+  font-size: 1.2rem;
+  color: #334155;
+
+  margin-bottom: 8px;
+}
+
+.info-group p {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.info-group span {
+  color: #22c55e;
+  font-weight: 600;
+}
+
+/* ADDRESS */
+
+.contact-address p {
+  color: #64748b;
+  font-size: 1.15rem;
+
+  line-height: 1.8;
+}
+
+.working-hours {
+  margin-top: 90px;
+}
+
+.working-hours strong {
+  display: block;
+
+  font-size: 1.2rem;
+  color: #475569;
+
+  margin-bottom: 10px;
+}
+
+.working-hours p {
+  color: #64748b;
+}
+
+/* RESPONSIVE */
+
+@media (max-width: 900px) {
+
+  .contact-title {
+    font-size: 2.5rem;
+  }
+
+  .contact-top-grid,
+  .contact-bottom-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .contact-bottom-grid {
+    gap: 60px;
+  }
+
+  .contact-card {
+    padding: 35px 24px;
+  }
+
+  .contact-card h2 {
+    font-size: 1.2rem;
+  }
+
+  .contact-info h2,
+  .contact-address h2 {
+    font-size: 1.2rem;
+  }
+}

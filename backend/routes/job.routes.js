@@ -7,4 +7,5 @@ const verifyToken = require("../middleware/auth.middleware");
 // Create job
 router.post("/create", verifyToken, jobController.createJob);
 router.get("/", jobController.getAllJobs);
+router.get("/internships", jobController.getCompanyInternships);
 module.exports = router;
