@@ -244,3 +244,134 @@ exports.updatePreferences = (req, res) => {
     }
   });
 };
+
+// SAVE JOB (add to preferences.savedJobs)
+exports.saveJob = (req, res) => {
+  const user_id = req.user.user_id;
+  const jobId = req.params.jobId;
+
+  if (!jobId) return res.status(400).json({ message: 'Job id required' });
+
+  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
+    if (err) return res.status(500).json(err);
+
+    let preferences = {};
+    if (result.length === 0) {
+      // create student row with preferences
+      preferences = { savedJobs: [jobId], hiddenJobs: [] };
+      const insertQuery = `INSERT INTO student (user_id, approval_status, preferences) VALUES (?, 'approved', ?)`;
+      db.query(insertQuery, [user_id, JSON.stringify(preferences)], (err) => {
+        if (err) return res.status(500).json(err);
+        return res.json({ savedJobs: preferences.savedJobs });
+      });
+    } else {
+      try {
+        preferences = result[0].preferences ? JSON.parse(result[0].preferences) : {};
+      } catch (e) {
+        preferences = {};
+      }
+
+      preferences.savedJobs = preferences.savedJobs || [];
+      if (!preferences.savedJobs.includes(String(jobId))) preferences.savedJobs.unshift(String(jobId));
+      const updateQuery = `UPDATE student SET preferences = ? WHERE user_id = ?`;
+      db.query(updateQuery, [JSON.stringify(preferences), user_id], (err) => {
+        if (err) return res.status(500).json(err);
+        return res.json({ savedJobs: preferences.savedJobs });
+      });
+    }
+  });
+};
+
+// HIDE JOB (add to preferences.hiddenJobs and remove from savedJobs)
+exports.hideJob = (req, res) => {
+  const user_id = req.user.user_id;
+  const jobId = req.params.jobId;
+
+  if (!jobId) return res.status(400).json({ message: 'Job id required' });
+
+  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
+    if (err) return res.status(500).json(err);
+
+    let preferences = {};
+    if (result.length === 0) {
+      preferences = { savedJobs: [], hiddenJobs: [jobId] };
+      const insertQuery = `INSERT INTO student (user_id, approval_status, preferences) VALUES (?, 'approved', ?)`;
+      db.query(insertQuery, [user_id, JSON.stringify(preferences)], (err) => {
+        if (err) return res.status(500).json(err);
+        return res.json({ hiddenJobs: preferences.hiddenJobs });
+      });
+    } else {
+      try {
+        preferences = result[0].preferences ? JSON.parse(result[0].preferences) : {};
+      } catch (e) {
+        preferences = {};
+      }
+
+      preferences.savedJobs = preferences.savedJobs || [];
+      preferences.hiddenJobs = preferences.hiddenJobs || [];
+      // remove from saved if present
+      preferences.savedJobs = preferences.savedJobs.filter(id => String(id) !== String(jobId));
+      if (!preferences.hiddenJobs.includes(String(jobId))) preferences.hiddenJobs.unshift(String(jobId));
+
+      const updateQuery = `UPDATE student SET preferences = ? WHERE user_id = ?`;
+      db.query(updateQuery, [JSON.stringify(preferences), user_id], (err) => {
+        if (err) return res.status(500).json(err);
+        return res.json({ hiddenJobs: preferences.hiddenJobs });
+      });
+    }
+  });
+};
+
+// GET SAVED JOBS
+exports.getSavedJobs = (req, res) => {
+  const user_id = req.user.user_id;
+  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
+    if (err) return res.status(500).json(err);
+    if (result.length === 0) return res.json({ savedJobs: [] });
+    try {
+      const prefs = result[0].preferences ? JSON.parse(result[0].preferences) : {};
+      return res.json({ savedJobs: prefs.savedJobs || [] });
+    } catch (e) {
+      return res.json({ savedJobs: [] });
+    }
+  });
+};
+
+// GET HIDDEN JOBS
+exports.getHiddenJobs = (req, res) => {
+  const user_id = req.user.user_id;
+  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
+    if (err) return res.status(500).json(err);
+    if (result.length === 0) return res.json({ hiddenJobs: [] });
+    try {
+      const prefs = result[0].preferences ? JSON.parse(result[0].preferences) : {};
+      return res.json({ hiddenJobs: prefs.hiddenJobs || [] });
+    } catch (e) {
+      return res.json({ hiddenJobs: [] });
+    }
+  });
+};
+
+// REMOVE SAVED JOB
+exports.removeSavedJob = (req, res) => {
+  const user_id = req.user.user_id;
+  const jobId = req.params.jobId;
+  if (!jobId) return res.status(400).json({ message: 'Job id required' });
+
+  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
+    if (err) return res.status(500).json(err);
+    if (result.length === 0) return res.json({ savedJobs: [] });
+    let preferences = {};
+    try {
+      preferences = result[0].preferences ? JSON.parse(result[0].preferences) : {};
+    } catch (e) {
+      preferences = {};
+    }
+    preferences.savedJobs = (preferences.savedJobs || []).filter(id => String(id) !== String(jobId));
+    const updateQuery = `UPDATE student SET preferences = ? WHERE user_id = ?`;
+    db.query(updateQuery, [JSON.stringify(preferences), user_id], (err) => {
+      if (err) return res.status(500).json(err);
+      return res.json({ savedJobs: preferences.savedJobs });
+    });
+  });
+};

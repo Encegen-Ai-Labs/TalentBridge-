@@ -7,7 +7,7 @@ import EmployerRegister from './pages/EmployerRegister';
 import CompanyDashboard from './pages/CompanyDashboard';
 import CompanyProfile from './pages/CompanyProfile';
 import PostJob from './pages/PostJob';
-import StudentOpportunityViewOnly from './pages/StudentOpportunityViewOnly';
+import StudentOpportunities from './pages/StudentOpportunities';
 import OpportunityDetails from './pages/OpportunityDetails';
 import EditPreferences from './pages/EditPreferences';
 import EditResume from './pages/EditResume';
@@ -15,6 +15,7 @@ import MyApplications from './pages/MyApplications';
 import Applicants from './pages/Applicants';
 import ContactUs from './pages/ContactUs';
 import Navbar from './components/Navbar';
+import SavedJobs from './pages/SavedJobs';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import './index.css';
@@ -24,7 +25,7 @@ function HomeRedirect() {
   const storedUser = localStorage.getItem('user');
 
   if (!token || !storedUser) {
-    return <StudentOpportunityViewOnly />;
+    return <StudentOpportunities />;
   }
 
   try {
@@ -36,7 +37,7 @@ function HomeRedirect() {
     // ignore
   }
 
-  return <StudentOpportunityViewOnly />;
+  return <StudentOpportunities />;
 }
 
 function AppContent() {
@@ -55,8 +56,9 @@ function AppContent() {
         <Route path="/company/dashboard" element={<CompanyDashboard />} />
         <Route path="/company/profile" element={<CompanyProfile />} />
         <Route path="/company/post-job" element={<PostJob />} />
-        <Route path="/internships" element={<StudentOpportunityViewOnly />} />
-        <Route path="/jobs" element={<StudentOpportunityViewOnly />} />
+        <Route path="/internships" element={<StudentOpportunities />} />
+        <Route path="/jobs" element={<StudentOpportunities />} />
+        <Route path="/saved-jobs" element={<SavedJobs />} />
         <Route path="/edit-preferences" element={<EditPreferences />} />
         <Route path="/edit-resume" element={<EditResume />} />
         <Route path="/applications" element={<MyApplications />} />

@@ -228,3 +228,58 @@ export const forgotPassword = async (email) => {
   if (!response.ok) throw new Error(data.message || 'Failed to send reset link');
   return data;
 };
+
+export const saveJob = async (jobId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`http://localhost:5000/api/student/saved/${jobId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to save job');
+  return data.savedJobs;
+};
+
+export const hideJob = async (jobId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`http://localhost:5000/api/student/hidden/${jobId}`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to hide job');
+  return data.hiddenJobs;
+};
+
+export const getSavedJobs = async () => {
+  const token = localStorage.getItem('token');
+  const response = await fetch('http://localhost:5000/api/student/saved', {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch saved jobs');
+  return data.savedJobs;
+};
+
+export const getHiddenJobs = async () => {
+  const token = localStorage.getItem('token');
+  const response = await fetch('http://localhost:5000/api/student/hidden', {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch hidden jobs');
+  return data.hiddenJobs;
+};
+
+export const removeSavedJob = async (jobId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`http://localhost:5000/api/student/saved/${jobId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to remove saved job');
+  return data.savedJobs;
+};
