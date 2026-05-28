@@ -11,6 +11,11 @@ let  token = req.headers["authorization"];
   }
 
   try {
+    if (!process.env.JWT_SECRET) {
+      console.error('JWT secret is not configured. Set JWT_SECRET in your environment.');
+      return res.status(500).json({ message: 'Server misconfiguration: JWT secret not set' });
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded;
     next();

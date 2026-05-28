@@ -236,6 +236,26 @@ export default function StudentOpportunities() {
     );
   }
 
+  const [selectedRoles, setSelectedRoles] = useState([]);
+
+  const availableRoles = [
+    'Frontend Developer',
+    'Backend Developer',
+    'Graphic Designer',
+    'Data Analyst',
+    'Product Designer',
+    'Marketing',
+    'DevOps',
+  ];
+
+  const toggleRole = (role) => {
+    setSelectedRoles((prev) => {
+      if (prev.includes(role)) return prev.filter((r) => r !== role);
+      if (prev.length >= 5) return prev; // limit to 5
+      return [...prev, role];
+    });
+  };
+
   return (
     <div className="opportunities-page">
 
@@ -243,31 +263,41 @@ export default function StudentOpportunities() {
 
         {/* TITLE */}
         <h1 className="main-title">
-          Fresher Jobs
+          Recommended jobs for you based on your profile and activity
         </h1>
 
-        {/* FILTERS */}
-        <div className="filters-row">
-
-          {filterPills.map((pill) => (
-            <button
-              key={pill}
-              className={`filter-pill ${
-                activeFilter === pill
-                  ? 'active'
-                  : ''
-              }`}
-              onClick={() =>
-                setActiveFilter(pill)
-              }
-            >
-              {pill}
-            </button>
-          ))}
+        <div className="top-note-apply">
+          <div className="note-text">You can select up to 5 job roles to apply</div>
+          <button className="apply-now-btn">Apply</button>
         </div>
 
-        {/* JOBS GRID */}
-        <div className="jobs-grid">
+        
+
+        {/* GRID: JOBS + PREFERENCES */}
+        <div className="opportunities-grid">
+
+          <div className="opportunities-main">
+            {/* FILTERS */}
+            <div className="filters-row">
+
+              {filterPills.map((pill) => (
+                <button
+                  key={pill}
+                  className={`filter-pill ${
+                    activeFilter === pill
+                      ? 'active'
+                      : ''
+                  }`}
+                  onClick={() =>
+                    setActiveFilter(pill)
+                  }
+                >
+                  {pill}
+                </button>
+              ))}
+            </div>
+
+            <div className="jobs-grid">
 
           {filteredJobs.length === 0 ? (
             <div className="empty-state">
@@ -370,10 +400,30 @@ export default function StudentOpportunities() {
                       </button>
                     </div>
                   </div>
-                );
-              }
-            )
-          )}
+          </div>
+                      onClick={() => toggleRole(role)}
+                    >
+                      {role}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <button
+                  className="update-matches-btn"
+                  onClick={() =>
+                    alert(
+                      `Selected roles: ${selectedRoles.join(', ')}`
+                    )
+                  }
+                >
+                  Apply Now
+                </button>
+              </div>
+            </div>
+          </aside>
+
         </div>
       </div>
     </div>

@@ -144,6 +144,8 @@ exports.register = async (req, res) => {
 exports.login = (req, res) => {
   const { email, password } = req.body;
 
+  console.log('LOGIN ATTEMPT:', { email });
+
   // ================= VALIDATION =================
 
   if (!email || !password) {
@@ -159,6 +161,11 @@ exports.login = (req, res) => {
     "SELECT * FROM users WHERE email = ?",
     [email],
     async (err, result) => {
+      if (err) {
+        console.error('DB QUERY ERROR on login:', err);
+      }
+
+      console.log('DB QUERY RESULT length:', result && result.length);
       if (err) {
         console.log("LOGIN ERROR:", err);
 
@@ -194,6 +201,10 @@ exports.login = (req, res) => {
         }
 
         // ================= JWT TOKEN =================
+        if (!process.env.JWT_SECRET) {
+          console.error('JWT secret is not configured. Set JWT_SECRET in your environment.');
+          return res.status(500).json({ message: 'Server misconfiguration: JWT secret not set' });
+        }
 
         const token = jwt.sign(
           {

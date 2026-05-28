@@ -40,6 +40,10 @@ app.get("/", (req, res) => {
 });
 
 const PORT = process.env.PORT || 5000;
+// Warn if JWT secret is not configured
+if (!process.env.JWT_SECRET) {
+  console.warn('WARNING: JWT_SECRET is not set. Login will fail until a JWT secret is configured.');
+}
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
