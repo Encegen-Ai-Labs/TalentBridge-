@@ -1,242 +1,302 @@
-/* Auth Container Layout */
-.auth-page {
+/* -------------------------------------------------
+   Global layout – full‑height centering
+   ------------------------------------------------- */
+.login-page {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 2rem;
-  background-color: #ffffff;
+  background-color: #555555; /* Dark background behind the workspace */
+  padding: 20px;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-.auth-card {
+/* Master canvas frame container */
+.login-container {
   display: flex;
-  background-color: #ffffff;
-  max-width: 1200px;
   width: 100%;
-  min-height: 600px;
-  gap: 2rem;
+  max-width: 1100px;
+  min-height: 620px;
+  background: #ffffff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
 }
 
-.auth-illustration {
-  flex: 1.2;
+/* -------------------------------------------------
+   Illustration (Left view side)
+   ------------------------------------------------- */
+.login-illustration {
+  flex: 1.1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 2rem;
+  padding: 40px;
+  background: #ffffff;
 }
 
-.auth-illustration img {
-  max-width: 100%;
+.login-illustration img {
+  max-width: 90%;
   height: auto;
   object-fit: contain;
-  animation: float 6s ease-in-out infinite;
 }
 
-@keyframes float {
-  0% {
-    transform: translateY(0px);
-  }
-
-  50% {
-    transform: translateY(-10px);
-  }
-
-  100% {
-    transform: translateY(0px);
-  }
-}
-
-.auth-form-container {
-  flex: 1;
-  padding: 3rem;
+/* -------------------------------------------------
+   Card Element Content (Right Form Area)
+   ------------------------------------------------- */
+.login-card {
+  flex: 0.9;
+  padding: 60px 50px;
+  background: #ffffff;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  
-  background-color: #ffffff;
-  margin: 1rem 0;
-  border-radius: 8px;
+
+  border-radius: 16px; 
+  border: 1px solid rgba(226, 232, 240, 0.8); 
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 
+              0 8px 10px -6px rgba(0, 0, 0, 0.05),
+              0 0 0 1px rgba(0, 0, 0, 0.01); 
 }
 
-.auth-title {
-  font-size: 1.875rem;
-  font-weight: 700;
+/* Title Header */
+.login-title {
+  font-size: 2rem;
+  font-weight: 600;
   margin-bottom: 2rem;
-  color: var(--text-dark);
+  color: #1e293b;
 }
 
-/* Form Elements */
+/* Form block control */
+.login-form {
+  width: 100%;
+}
+
 .form-group {
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.25rem;
+  position: relative;
 }
 
 .form-label {
   display: block;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
-  color: var(--text-dark);
+  margin-bottom: 0.6rem;
+  color: #1e293b;
 }
 
-.form-input-wrapper {
-  position: relative;
-}
-
+/* Modern Input boxes with mild dynamic lighting */
 .form-input {
   width: 100%;
-  padding: 0.875rem 1rem;
-  font-size: 1rem;
-  border: 1px solid var(--border-color);
+  padding: 0.9rem 1.1rem;
+  font-size: 0.95rem;
+  border: 1.5px solid #e2e8f0;
   border-radius: 12px;
-  background-color: #fff;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  background: #fdfdfd;
+  color: #334155;
+  box-sizing: border-box;
+  transition: all 0.25s ease;
+}
+
+.form-input::placeholder {
+  color: #94a3b8;
+  opacity: 0.8;
 }
 
 .form-input:focus {
   outline: none;
-  border-color: var(--input-focus);
+  border-color: #10b981; /* Figma Emerald highlight */
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-.form-input::placeholder {
-  color: var(--text-light);
+.input-error {
+  border-color: #ef4444 !important;
+  background-color: #fff5f5;
 }
 
-.password-toggle {
+/* Password eye positioning toggle wrapper */
+.password-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.toggle-pass {
   position: absolute;
-  right: 1rem;
+  right: 1.2rem;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--input-focus);
-  font-size: 0.875rem;
+  color: #3b82f6;
   font-weight: 500;
   cursor: pointer;
+  font-size: 0.85rem;
 }
 
-.forgot-password {
-  display: block;
-  text-align: right;
-  font-size: 0.875rem;
+/* Alignment engine for forgot link mapping */
+.forgot-password-align {
+  display: flex;
+  justify-content: flex-end;
   margin-top: 0.5rem;
 }
 
-/* Buttons */
+.forgot-link {
+  font-size: 0.85rem;
+  color: #3b82f6;
+  text-decoration: none;
+}
+
+.forgot-link:hover {
+  text-decoration: underline;
+}
+
+/* -------------------------------------------------
+   Buttons & Primary Action Controls (Figma Theme)
+   ------------------------------------------------- */
 .btn-primary {
   width: 100%;
   padding: 1rem;
-  background-color: var(--primary-color);
-  color: white;
+  background: #10b981; /* Precise Figma Green */
+  color: #ffffff;
   border: none;
   border-radius: 12px;
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-  margin-top: 1rem;
+  margin-top: 0.75rem;
+  transition: background 0.2s ease;
 }
 
 .btn-primary:hover {
-  background-color: var(--primary-hover);
+  background: #059669; /* Darker green on hover */
 }
 
-.use-otp {
-  display: block;
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* OTP login routing system link block */
+.otp-container {
   text-align: center;
-  margin-top: 1rem;
-  font-size: 0.875rem;
-  color: var(--primary-color);
-  font-weight: 500;
-  cursor: pointer;
+  margin-top: 1.2rem;
 }
 
-.error-text {
-  color: red;
-  font-size: 0.8rem;
-  margin-top: 6px;
-}
-
-.input-error {
-  border: 1px solid red !important;
-}
-
-.register-link-container {
-  margin-top: 1rem;
-  text-align: center;
+.otp-link {
   font-size: 0.9rem;
-}
-
-.register-link {
-  color: #2563eb;
+  color: #10b981;
   font-weight: 600;
   text-decoration: none;
 }
 
-.register-link:hover {
+.otp-link:hover {
   text-decoration: underline;
 }
 
-/* Divider */
-.divider {
-  display: flex;
-  align-items: center;
-  text-align: center;
-  margin: 1.5rem 0;
-  color: var(--text-light);
-  font-size: 0.875rem;
-}
-
-.divider::before,
-.divider::after {
-  content: '';
-  flex: 1;
-  border-bottom: 1px solid var(--border-color);
-}
-
-.divider:not(:empty)::before {
-  margin-right: .5em;
-}
-
-.divider:not(:empty)::after {
-  margin-left: .5em;
-}
-
-.btn-google {
-  width: 100%;
-  padding: 1rem;
-  background-color: white;
-  color: var(--text-dark);
-  border: 1px solid var(--border-color);
-  border-radius: 50px;
-  font-size: 1rem;
-  font-weight: 500;
-  cursor: pointer;
+/* Customized Grid Flex Divider matching screenshot */
+.divider-wrapper {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  transition: background-color 0.2s ease;
+  margin: 1.5rem 0;
+}
+
+.divider-line {
+  flex: 1;
+  height: 1px;
+  background-color: #e2e8f0;
+}
+
+.divider-text {
+  padding: 0 1rem;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+/* Google clean rounded auth control flat design */
+.btn-google {
+  width: 100%;
+  padding: 0.95rem;
+  background: #ffffff;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+  border-radius: 30px; /* Fully rounded capsule as per UI */
+  font-size: 0.95rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .btn-google:hover {
-  background-color: #f8fafc;
+  background: #f8fafc;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
-.btn-google img {
-  width: 20px;
-  height: 20px;
+/* Fallback global warnings structure alerts code */
+.error-banner {
+  background: #fef2f2;
+  color: #dc2626;
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.85rem;
+  border: 1px solid #fecaca;
 }
 
-@media (max-width: 768px) {
-  .auth-card {
+.error-text {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin-top: 0.35rem;
+  font-weight: 500;
+}
+
+/* -------------------------------------------------
+   RESPONSIVE BREAKPOINTS (Mobile adaptation setup)
+   ------------------------------------------------- */
+@media (max-width: 912px) {
+  .login-container {
     flex-direction: column;
+    max-width: 500px;
+    min-height: auto;
   }
+  .login-illustration {
+    padding: 30px;
+  }
+  .login-card {
+    padding: 40px 30px;
+  }
+}
 
-  .auth-illustration {
-    display: none;
+@media (max-width: 550px) {
+  .login-page {
+    padding: 0;
+    background: #ffffff;
   }
-
-  .auth-form-container {
-    padding: 2rem;
+  .login-container {
+    box-shadow: none;
+    border-radius: 0;
   }
+  .login-illustration {
+    display: none; /* Hide art panel context inside cellphones viewports */
+  }
+  .login-card {
+    padding: 30px 20px;
+  }
+  .login-title {
+    font-size: 1.75rem;
+  }
+}
+.register-prompt {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+  color: #64748b;
+  Text-align: center;
 }

@@ -113,7 +113,7 @@ const handleSearch = (e) => {
                   Jobs
                 </Link>
 
-                <Link to="/ContactUs" className="nav-link">
+                <Link to="/contact-us" className="nav-link">
                   Contact Us
                 </Link>
               </>
@@ -180,6 +180,14 @@ const handleSearch = (e) => {
                         </>
                       ) : (
                         <>
+                          <Link
+                            to="/profile"
+                            className="dropdown-item"
+                            onClick={() => setDropdownOpen(false)}
+                          >
+                            My Profile
+                          </Link>
+
                           <Link
                             to="/edit-resume"
                             className="dropdown-item"
@@ -322,6 +330,13 @@ const handleSearch = (e) => {
             <>
               {user?.role !== 'company' && (
                 <>
+                  <Link
+                    to="/profile"
+                    onClick={closeMobileMenu}
+                  >
+                    My Profile
+                  </Link>
+
                   <Link
                     to="/edit-resume"
                     onClick={closeMobileMenu}

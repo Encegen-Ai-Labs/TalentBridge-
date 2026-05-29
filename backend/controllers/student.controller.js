@@ -95,60 +95,62 @@ exports.getStudentProfile = (req, res) => {
   });
 };
 
+function safeParseJson(value) {
+  if (!value) return null;
+  if (typeof value === 'object') return value;
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return null;
+  }
+}
+
 // UPDATE STUDENT PROFILE
 exports.updateProfile = (req, res) => {
   const user_id = req.user.user_id;
-  const { name, mobile_number, skills, branch, year, resume_data, resume_url } = req.body;
+  const { name, mobile_number, skills, branch, year, resume_data, resume_url, work_status } = req.body;
+  const parsedResumeData = safeParseJson(resume_data) || {};
 
-  // 1. Update the users table first
-  const updateUsersQuery = `
-    UPDATE users
-    SET name = ?, mobile_number = ?
-    WHERE user_id = ?
-  `;
+  if (req.file) {
+    parsedResumeData.avatar_url = `/uploads/${req.file.filename}`;
+  }
 
-  db.query(updateUsersQuery, [name, mobile_number, user_id], (err) => {
-    if (err) {
-      console.error("UPDATE USERS ERROR:", err);
-      return res.status(500).json({ message: "Failed to update user account details" });
+  const updateUserQuery = `UPDATE users SET name = ?, mobile_number = ?, work_status = ? WHERE user_id = ?`;
+  const userValues = [name || null, mobile_number || null, work_status || null, user_id];
+
+  db.query(updateUserQuery, userValues, (userErr) => {
+    if (userErr) {
+      console.error('UPDATE USER PROFILE ERROR:', userErr);
+      return res.status(500).json({ message: 'Failed to update user profile' });
     }
 
-    // 2. Check if student profile exists
-    const checkQuery = "SELECT * FROM student WHERE user_id = ?";
-    db.query(checkQuery, [user_id], (err, results) => {
-      if (err) {
-        console.error("CHECK STUDENT ERROR:", err);
-        return res.status(500).json({ message: "Database query error" });
+    db.query('SELECT * FROM student WHERE user_id = ?', [user_id], (selectErr, selectResult) => {
+      if (selectErr) {
+        console.error('SELECT STUDENT PROFILE ERROR:', selectErr);
+        return res.status(500).json({ message: 'Failed to update student profile' });
       }
 
-      const resumeDataString = resume_data ? (typeof resume_data === 'string' ? resume_data : JSON.stringify(resume_data)) : null;
+      const studentFields = ['branch = ?', 'year = ?', 'skills = ?', 'resume_url = ?', 'resume_data = ?'];
+      const studentValues = [branch || null, year || null, skills || null, resume_url || null, JSON.stringify(parsedResumeData)];
 
-      if (results.length === 0) {
-        // Create profile
-        const insertQuery = `
-          INSERT INTO student (user_id, approval_status, skills, branch, year, resume_data, resume_url)
-          VALUES (?, 'approved', ?, ?, ?, ?, ?)
-        `;
-        db.query(insertQuery, [user_id, skills || null, branch || null, year || null, resumeDataString, resume_url || null], (err) => {
-          if (err) {
-            console.error("INSERT STUDENT ERROR:", err);
-            return res.status(500).json({ message: "Failed to create student profile" });
+      if (selectResult.length > 0) {
+        const updateStudentQuery = `UPDATE student SET ${studentFields.join(', ')} WHERE user_id = ?`;
+        studentValues.push(user_id);
+        db.query(updateStudentQuery, studentValues, (studentErr) => {
+          if (studentErr) {
+            console.error('UPDATE STUDENT PROFILE ERROR:', studentErr);
+            return res.status(500).json({ message: 'Failed to update student profile' });
           }
-          return res.json({ message: "Profile created and updated successfully" });
+          return res.json({ message: 'Profile updated successfully' });
         });
       } else {
-        // Update existing profile
-        const updateQuery = `
-          UPDATE student
-          SET skills = ?, branch = ?, year = ?, resume_data = ?, resume_url = ?
-          WHERE user_id = ?
-        `;
-        db.query(updateQuery, [skills || null, branch || null, year || null, resumeDataString, resume_url || null, user_id], (err) => {
-          if (err) {
-            console.error("UPDATE STUDENT ERROR:", err);
-            return res.status(500).json({ message: "Failed to update student profile details" });
+        const insertStudentQuery = `INSERT INTO student (user_id, branch, year, skills, resume_url, resume_data) VALUES (?, ?, ?, ?, ?, ?)`;
+        db.query(insertStudentQuery, [user_id, branch || null, year || null, skills || null, resume_url || null, JSON.stringify(parsedResumeData)], (insertErr) => {
+          if (insertErr) {
+            console.error('INSERT STUDENT PROFILE ERROR:', insertErr);
+            return res.status(500).json({ message: 'Failed to create student profile' });
           }
-          return res.json({ message: "Profile updated successfully" });
+          return res.json({ message: 'Profile created successfully' });
         });
       }
     });

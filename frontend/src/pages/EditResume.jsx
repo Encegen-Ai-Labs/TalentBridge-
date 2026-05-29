@@ -143,16 +143,6 @@ export default function EditResume() {
         resume_data: resumeData
       });
 
-      // Update user details in localStorage too to keep UI in sync
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        try {
-          const parsed = JSON.parse(storedUser);
-          parsed.name = name;
-          localStorage.setItem('user', JSON.stringify(parsed));
-        } catch (e) {}
-      }
-
       if (!silent) {
         toast.success('Resume details saved successfully!');
       }

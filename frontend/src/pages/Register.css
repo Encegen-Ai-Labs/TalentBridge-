@@ -1,32 +1,47 @@
+/* CSS VARIABLES FOR GLOBAL THEME */
+:root {
+  --primary-color: #10b981;       /* मुख्य हिरवा रंग */
+  --primary-hover: #059669;       /* होव्हर हिरवा रंग */
+  --text-dark: #1e293b;           /* डार्क मजकूर */
+  --text-light: #64748b;          /* फिकट मजकूर */
+  --border-color: #e2e8f0;        /* बॉर्डर रंग */
+  --input-focus: #10b981;
+  --bg-page: #3b5c71;             /* Figma मधील डीप ब्लू बॅकग्राउंड */
+}
+
+/* MAIN LAYOUT PAGE */
 .register-page {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 2rem;
-  background-color: #3b5c71;
-  /* Deep teal/blue background from Figma */
+  padding: 1.5rem;
+  background-color: var(--bg-page);
+  font-family: 'Inter', sans-serif;
+  box-sizing: border-box;
 }
 
+/* MAIN RESPONSIVE CARD WITH PREMIUM SHADOWED BORDER */
 .register-card {
   display: flex;
   background-color: #ffffff;
-  max-width: 1000px;
-  /* Reduced width to match Figma proportions */
+  max-width: 1050px;
   width: 100%;
-  min-height: 600px;
-  border-radius: 8px;
-  /* Square-ish border like Figma */
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  min-height: 620px;
+  border-radius: 16px; /* मऊ कोपरे */
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 
+              0 10px 10px -5px rgba(0, 0, 0, 0.2); /* डार्क आणि क्लीन सावली प्रभाव */
   overflow: hidden;
 }
 
+/* LEFT SIDE - ILLUSTRATION CONTAINER */
 .register-illustration-container {
   flex: 1;
-  padding: 2rem;
+  padding: 2.5rem;
   display: flex;
   flex-direction: column;
-  position: relative;
+  justify-content: center;
   background-color: #ffffff;
 }
 
@@ -34,32 +49,26 @@
   border: 1px solid var(--border-color);
   border-radius: 16px;
   padding: 2.5rem 2rem;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  justify-content: center;
 }
 
 .illustration-graphic {
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
 }
 
 .illustration-graphic img {
-  width: 160px;
-  height: 160px;
-  object-fit: cover;
-  border-radius: 50%;
-  background-color: #f8fafc;
-  border: 1px solid var(--border-color);
-  padding: 0.5rem;
-}
-
-.features-list {
-  margin-top: 1rem;
+  width: 140px;
+  height: 140px;
+  object-fit: contain;
 }
 
 .features-list h3 {
-  font-size: 1.15rem;
-  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  margin-bottom: 1.25rem;
   color: var(--text-dark);
   font-weight: 700;
 }
@@ -67,16 +76,17 @@
 .features-list ul {
   list-style: none;
   padding: 0;
+  margin: 0;
 }
 
 .features-list li {
   display: flex;
   align-items: flex-start;
   gap: 0.75rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1rem;
   color: var(--text-dark);
-  font-size: 0.9rem;
-  line-height: 1.5;
+  font-size: 0.88rem;
+  line-height: 1.4;
 }
 
 .check-icon {
@@ -90,13 +100,11 @@
   justify-content: center;
   font-size: 10px;
   flex-shrink: 0;
-  margin-top: 3px;
+  margin-top: 2px;
 }
 
 .resume-badge {
   display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
   padding: 0.5rem 1.25rem;
   background-color: #ffffff;
   color: var(--text-dark);
@@ -104,48 +112,45 @@
   font-weight: 600;
   font-size: 0.85rem;
   border: 1px solid #bbf7d0;
-  /* Slight green border */
-  margin-top: 3rem;
+  margin-top: 1.5rem;
   align-self: flex-start;
-  box-shadow: 0 2px 12px rgba(34, 197, 94, 0.15);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.1);
 }
 
-.resume-badge span {
-  color: var(--primary-color);
-  font-size: 1.1rem;
-}
-
+/* RIGHT SIDE - FORM CONTAINER */
 .register-form-container {
-  flex: 1.3;
-  padding: 3rem;
-  margin: 2rem 2rem 2rem 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: 16px;
+  flex: 1.2;
+  padding: 3rem 2.5rem;
   background-color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .register-title {
-  font-size: 1.75rem;
+  font-size: 1.6rem;
   font-weight: 700;
   color: var(--text-dark);
-  margin-bottom: 0.25rem;
+  margin: 0 0 0.35rem 0;
 }
 
 .register-subtitle {
   color: var(--text-light);
-  margin-bottom: 2rem;
+  margin: 0 0 1.75rem 0;
   font-size: 0.9rem;
 }
 
+/* INPUT MANAGEMENT */
 .form-group {
   margin-bottom: 1.25rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-label {
-  display: block;
   font-size: 0.85rem;
   font-weight: 600;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.4rem;
   color: var(--text-dark);
 }
 
@@ -156,18 +161,34 @@
   border: 1px solid var(--border-color);
   border-radius: 8px;
   background-color: #fff;
-  transition: border-color 0.2s ease;
+  box-sizing: border-box;
+  transition: all 0.2s ease;
 }
 
 .form-input:focus {
   outline: none;
   border-color: var(--input-focus);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
-.form-input::placeholder {
-  color: #cbd5e1;
+.input-error {
+  border-color: #ef4444 !important;
 }
 
+.error-text {
+  color: #ef4444;
+  font-size: 0.8rem;
+  margin: 0.35rem 0 0 0;
+}
+
+.password-instruction {
+  color: #748094;
+  font-size: 0.78rem;
+  margin-top: 0.35rem;
+  line-height: 1.3;
+}
+
+/* WORK STATUS OPTIONS (FLEX CARDS) */
 .work-status-options {
   display: flex;
   gap: 1rem;
@@ -178,429 +199,154 @@
   flex: 1;
   border: 1px solid var(--border-color);
   border-radius: 12px;
-  padding: 1rem;
+  padding: 0.85rem 1rem;
   cursor: pointer;
   transition: all 0.2s ease;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 0.5rem;
 }
 
 .status-card:hover {
-  border-color: #94a3b8;
+  border-color: #cbd5e1;
 }
 
 .status-card.selected {
   border: 2px solid var(--primary-color);
-  background-color: #ffffff;
+  background-color: rgba(16, 185, 129, 0.02);
 }
 
 .status-content h4 {
+  margin: 0 0 0.15rem 0;
   font-size: 0.9rem;
-  margin-bottom: 0.25rem;
   color: var(--text-dark);
-  font-weight: 600;
 }
 
 .status-content p {
+  margin: 0;
   font-size: 0.75rem;
   color: var(--text-light);
-  line-height: 1.4;
 }
 
 .status-icon {
   font-size: 1.25rem;
 }
 
+/* CHECKBOX GROUP */
 .checkbox-group {
-  margin: 1.5rem 0;
+  margin: 1.25rem 0;
 }
 
-.checkbox-group label {
+.checkbox-label {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 0.5rem;
-  font-size: 0.8rem;
-  color: var(--text-light);
+  font-size: 0.85rem;
+  color: var(--text-dark);
   cursor: pointer;
-  line-height: 1.4;
 }
 
-.checkbox-group input {
-  margin-top: 2px;
+.checkbox-label input {
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  accent-color: var(--primary-color);
 }
 
+/* REGISTER SUBMIT BUTTON */
 .btn-register {
-  width: max-content;
-  min-width: 140px;
-  padding: 0.75rem 1.5rem;
+  width: 100%;
+  padding: 0.85rem;
   background-color: var(--primary-color);
-  color: white;
+  color: #ffffff;
   border: none;
-  border-radius: 50px;
-  font-size: 0.95rem;
+  border-radius: 8px;
   font-weight: 600;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: background-color 0.2s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .btn-register:hover {
   background-color: var(--primary-hover);
 }
 
-.alert {
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 1.5rem;
-  font-size: 0.9rem;
+.btn-register:disabled {
+  background-color: #94a3b8;
+  cursor: not-allowed;
 }
 
-.alert.error {
-  background-color: #fef2f2;
-  color: #ef4444;
-  border: 1px solid #fecaca;
+/* LOGIN BACK REDIRECTION LINK */
+.register-login-link {
+  text-align: center;
+  margin-top: 1.25rem;
+  font-size: 0.88rem;
+  color: var(--text-light);
 }
 
-.alert.success {
-  background-color: #f0fdf4;
-  color: #22c55e;
-  border: 1px solid #bbf7d0;
+.register-link {
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 600;
 }
 
-/* =========================
-   RESPONSIVE DESIGN
-========================= */
-
-/* ---------- Large Screens ---------- */
-@media (max-width: 1200px) {
-
-  .register-card {
-    max-width: 95%;
-  }
-
-  .register-form-container {
-    padding: 2rem;
-  }
+.register-link:hover {
+  text-decoration: underline;
 }
 
-
-/* ---------- Tablets ---------- */
-@media (max-width: 992px) {
-
-  .register-page {
-    padding: 1.5rem;
-  }
-
-  .register-card {
-    flex-direction: column;
-    max-width: 700px;
-    min-height: auto;
-  }
-
-  .register-illustration-container {
-    width: 100%;
-    padding: 2rem;
-  }
-
-  .register-form-container {
-    width: 100%;
-    margin: 0;
-    border-radius: 0 0 16px 16px;
-    padding: 2rem;
-  }
-
-  .illustration-graphic img {
-    width: 130px;
-    height: 130px;
-  }
-
-  .resume-badge {
-    margin-top: 2rem;
-  }
-}
-
-
-/* ---------- Mobile Devices ---------- */
-@media (max-width: 768px) {
-
-  .register-page {
-    padding: 1rem;
-    min-height: auto;
-  }
-
-  .register-card {
-    flex-direction: column;
-    border-radius: 14px;
-    overflow: hidden;
-  }
-
-  /* Hide illustration on mobile */
-  .register-illustration-container {
-    display: none;
-  }
-
-  .register-form-container {
-    width: 100%;
-    margin: 0;
-    padding: 1.5rem;
-    border-radius: 14px;
-    border: none;
-  }
-
-  .register-title {
-    font-size: 1.5rem;
-    text-align: center;
-  }
-
-  .register-subtitle {
-    text-align: center;
-    font-size: 0.85rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .form-group {
-    margin-bottom: 1rem;
-  }
-
-  .form-input {
-    font-size: 0.9rem;
-    padding: 0.75rem;
-  }
-
-  .work-status-options {
-    flex-direction: column;
-  }
-
-  .status-card {
-    width: 100%;
-  }
-
-  .btn-register {
-    width: 100%;
-    justify-content: center;
-    text-align: center;
-    padding: 0.85rem;
-    font-size: 1rem;
-  }
-
-  .checkbox-group label {
-    font-size: 0.75rem;
-  }
-}
-
-
-/* ---------- Small Mobile Devices ---------- */
-@media (max-width: 480px) {
-
-  .register-page {
-    padding: 0.5rem;
-  }
-
-  .register-card {
-    border-radius: 10px;
-  }
-
-  .register-form-container {
-    padding: 1rem;
-  }
-
-  .register-title {
-    font-size: 1.3rem;
-  }
-
-  .register-subtitle {
-    font-size: 0.8rem;
-  }
-
-  .form-label {
-    font-size: 0.8rem;
-  }
-
-  .form-input {
-    padding: 0.7rem;
-    font-size: 0.85rem;
-    border-radius: 6px;
-  }
-
-  .status-card {
-    padding: 0.85rem;
-  }
-
-  .status-content h4 {
-    font-size: 0.85rem;
-  }
-
-  .status-content p {
-    font-size: 0.72rem;
-  }
-
-  .btn-register {
-    font-size: 0.9rem;
-    padding: 0.8rem;
-  }
-
-  .checkbox-group label {
-    font-size: 0.72rem;
-  }
-
-  .alert {
-    font-size: 0.8rem;
-    padding: 0.8rem;
-  }
-}
-
-
-/* ---------- Extra Small Devices ---------- */
-@media (max-width: 360px) {
-
-  .register-form-container {
-    padding: 0.85rem;
-  }
-
-  .register-title {
-    font-size: 1.15rem;
-  }
-
-  .form-input {
-    font-size: 0.8rem;
-    padding: 0.65rem;
-  }
-
-  .btn-register {
-    font-size: 0.85rem;
-  }
-}
-
-/* Preferences Step Styling */
+/* STEP 2 - PREFERENCES EXTRA CSS */
 .preferences-header {
   display: flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1rem;
   margin-bottom: 0.5rem;
 }
 
 .btn-back-step {
   background: none;
   border: none;
-  color: var(--primary-color);
-  font-weight: 700;
+  color: var(--text-light);
+  font-weight: 600;
   cursor: pointer;
-  padding: 0.25rem 0.5rem;
-  font-size: 0.95rem;
-  transition: transform 0.2s ease;
+  font-size: 0.9rem;
+  padding: 0;
 }
 
 .btn-back-step:hover {
-  transform: translateX(-3px);
+  color: var(--text-dark);
 }
 
 .selected-tags-container {
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
-  margin: 0.75rem 0;
+  margin-top: 0.5rem;
 }
 
 .preference-tag-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 0.35rem 0.85rem;
-  background-color: #10b981; /* Green chip like Figma screenshot */
-  color: white;
+  background-color: #f1f5f9;
+  color: var(--text-dark);
+  padding: 0.25rem 0.75rem;
   border-radius: 50px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-.preference-tag-chip.location-chip {
-  background-color: #22c55e;
+  font-size: 0.8rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  border: 1px solid var(--border-color);
 }
 
 .remove-tag-btn {
   background: none;
   border: none;
-  color: white;
-  font-weight: 700;
+  color: #ef4444;
+  font-weight: bold;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.9rem;
   padding: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-}
-
-.suggestions-meta-block {
-  margin: 0.75rem 0 1.25rem 0;
-  font-size: 0.8rem;
-  color: #64748b;
-}
-
-.suggested-pills-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.35rem;
-}
-
-.suggestion-pill-btn {
-  background: none;
-  border: 1px dashed #cbd5e1;
-  color: #475569;
-  padding: 0.25rem 0.65rem;
-  border-radius: 50px;
-  font-size: 0.75rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.suggestion-pill-btn:hover {
-  background-color: #f1f5f9;
-  border-color: #94a3b8;
-}
-
-.popular-interests-block {
-  margin-top: 1.25rem;
-}
-
-.form-label-secondary {
-  display: block;
-  font-size: 0.8rem;
-  color: #64748b;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-.interests-grid-pills {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.interest-pill-option {
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  color: #475569;
-  padding: 0.35rem 0.75rem;
-  border-radius: 50px;
-  font-size: 0.78rem;
-  cursor: pointer;
-  font-weight: 600;
-  transition: all 0.2s ease;
-}
-
-.interest-pill-option:hover {
-  background-color: #f1f5f9;
-  border-color: #cbd5e1;
-}
-
-.interest-pill-option.selected {
-  background-color: #10b981;
-  border-color: #10b981;
-  color: white;
 }
 
 .career-goals-vertical-list {
@@ -612,29 +358,93 @@
 
 .career-goal-radio-option {
   display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  font-size: 0.88rem;
-  color: #334155;
+  align-items: flex-start;
+  gap: 0.6rem;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
   cursor: pointer;
+  font-size: 0.85rem;
+  color: var(--text-dark);
 }
 
 .career-goal-radio-option input {
-  width: 16px;
-  height: 16px;
-  cursor: pointer;
+  margin-top: 2px;
+  accent-color: var(--primary-color);
 }
 
 .preferences-form-footer {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 2.5rem;
+  margin-top: 1.75rem;
 }
 
-.btn-preferences-save {
-  background-color: #f97316 !important; /* Bright orange Save button like Figma! */
+
+/* ===================================================
+   💻 MEDIA QUERIES (RESPONSIVENESS FOR ALL DEVICES)
+   =================================================== */
+
+/* 1. Large Tablets & Small Laptops (Under 992px) */
+@media (max-width: 992px) {
+  .register-card {
+    max-width: 720px;
+  }
+  .register-illustration-container {
+    padding: 1.5rem;
+  }
+  .illustration-content-box {
+    padding: 1.5rem 1rem;
+  }
+  .register-form-container {
+    padding: 2rem 1.75rem;
+  }
 }
 
-.btn-preferences-save:hover {
-  background-color: #ea580c !important;
+/* 2. Small Tablets & iPad Portrait (Under 768px) 
+   - डावा इलस्ट्रेशन पॅनेल हायड होईल आणि फक्त फॉर्म फुल स्क्रीन दिसेल */
+@media (max-width: 768px) {
+  .register-page {
+    padding: 1rem;
+  }
+  .register-card {
+    max-width: 500px;
+    flex-direction: column;
+    min-height: auto;
+  }
+  .register-illustration-container {
+    display: none; /* मोबाईल आणि टॅबलेटवर डावा भाग हायड केला */
+  }
+  .register-form-container {
+    flex: 1;
+    padding: 2.5rem 1.5rem;
+  }
+  .register-title {
+    font-size: 1.4rem;
+  }
+}
+
+/* 3. Mobile Phones (Under 480px) */
+@media (max-width: 480px) {
+  .register-page {
+    padding: 0.5rem;
+    align-items: flex-start; /* अत्यंत लहान स्क्रीनवर टॉप वरून स्क्रोल होण्यासाठी */
+  }
+  .register-card {
+    border-radius: 12px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15);
+  }
+  .register-form-container {
+    padding: 1.75rem 1.1rem;
+  }
+  .work-status-options {
+    flex-direction: column; /* Experienced आणि Fresher एका खाली एक येतील */
+    gap: 0.65rem;
+  }
+  .status-card {
+    padding: 0.75rem;
+  }
+  .form-input {
+    padding: 0.65rem 0.85rem;
+  }
+  .btn-register {
+    padding: 0.75rem;
+  }
 }
