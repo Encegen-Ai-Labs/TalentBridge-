@@ -147,10 +147,14 @@ export const getStudentProfile = async () => {
 
 export const updateStudentProfile = async (profileData) => {
   const token = localStorage.getItem('token');
+  const isForm = profileData instanceof FormData;
   const response = await fetch('http://localhost:5000/api/student/profile', {
     method: 'PUT',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(profileData),
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(isForm ? {} : { 'Content-Type': 'application/json' }),
+    },
+    body: isForm ? profileData : JSON.stringify(profileData),
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || 'Failed to update student profile');

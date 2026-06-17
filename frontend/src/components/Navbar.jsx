@@ -181,6 +181,14 @@ const handleSearch = (e) => {
                       ) : (
                         <>
                           <Link
+                            to="/profile"
+                            className="dropdown-item"
+                            onClick={() => setDropdownOpen(false)}
+                          >
+                            My Profile
+                          </Link>
+
+                          <Link
                             to="/edit-resume"
                             className="dropdown-item"
                             onClick={() => setDropdownOpen(false)}
@@ -322,6 +330,13 @@ const handleSearch = (e) => {
             <>
               {user?.role !== 'company' && (
                 <>
+                  <Link
+                    to="/profile"
+                    onClick={closeMobileMenu}
+                  >
+                    My Profile
+                  </Link>
+
                   <Link
                     to="/edit-resume"
                     onClick={closeMobileMenu}

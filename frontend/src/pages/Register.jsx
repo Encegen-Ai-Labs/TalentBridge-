@@ -27,14 +27,12 @@ export default function Register() {
   const [errors, setErrors] = useState({});
 
   // ================= VALIDATION =================
-
   const validateField = (name, value) => {
     let error = '';
 
-    // ================= NAME =================
+    // ===== NAME =====
     if (name === 'name') {
       const trimmed = value.trim();
-
       if (!trimmed) {
         error = 'Full name is required';
       } else if (value.startsWith(' ')) {
@@ -44,17 +42,15 @@ export default function Register() {
       } else if (trimmed.length > 40) {
         error = 'Maximum 40 characters allowed';
       } else if (!/^[A-Za-z ]+$/.test(trimmed)) {
-        error =
-          'Numbers and special characters are not allowed';
+        error = 'Numbers and special characters are not allowed';
       } else if (/\s{2,}/.test(trimmed)) {
         error = 'Multiple spaces are not allowed';
       }
     }
 
-    // ================= EMAIL =================
+    // ===== EMAIL =====
     if (name === 'email') {
       const trimmed = value.trim();
-
       if (!trimmed) {
         error = 'Email is required';
       } else if (value.startsWith(' ')) {
@@ -66,16 +62,14 @@ export default function Register() {
       } else if (/^\d/.test(value)) {
         error = 'Email cannot start with number';
       } else {
-        const emailRegex =
-          /^[a-z][a-z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,}$/;
-
+        const emailRegex = /^[a-z][a-z0-9._%+-]*@[a-z0-9.-]+\.[a-z]{2,}$/;
         if (!emailRegex.test(trimmed)) {
           error = 'Invalid email format';
         }
       }
     }
 
-    // ================= PASSWORD =================
+    // ===== PASSWORD =====
     if (name === 'password') {
       if (!value.trim()) {
         error = 'Password is required';
@@ -88,36 +82,28 @@ export default function Register() {
       } else if (value.length > 16) {
         error = 'Maximum 16 characters allowed';
       } else if (!/(?=.*[A-Z])/.test(value)) {
-        error =
-          'At least one uppercase letter required';
+        error = 'At least one uppercase letter required';
       } else if (!/(?=.*[a-z])/.test(value)) {
-        error =
-          'At least one lowercase letter required';
+        error = 'At least one lowercase letter required';
       } else if (!/(?=.*\d)/.test(value)) {
-        error =
-          'At least one number required';
-      } else if (
-        !/(?=.*[!@#$%^&*])/.test(value)
-      ) {
-        error =
-          'At least one special character required';
+        error = 'At least one number required';
+      } else if (!/(?=.*[!@#$%^&*])/.test(value)) {
+        error = 'At least one special character required';
       }
     }
 
-    // ================= MOBILE =================
+    // ===== MOBILE =====
     if (name === 'mobile_number') {
       if (!value) {
         error = 'Mobile number is required';
       } else if (!/^[6-9]/.test(value)) {
-        error =
-          'Mobile number must start from 6-9';
+        error = 'Mobile number must start from 6-9';
       } else if (!/^\d+$/.test(value)) {
         error = 'Only numbers are allowed';
       } else if (value.length < 10) {
         error = 'Mobile number must be 10 digits';
       } else if (value.length > 10) {
-        error =
-          'More than 10 digits are not allowed';
+        error = 'More than 10 digits are not allowed';
       }
     }
 
@@ -125,94 +111,44 @@ export default function Register() {
   };
 
   // ================= HANDLE CHANGE =================
-
-
-
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
 
-    // ===== MOBILE =====
     if (name === 'mobile_number') {
       const onlyDigits = value.replace(/\D/g, '');
-
       if (onlyDigits.length > 10) return;
 
-      setFormData((prev) => ({
-        ...prev,
-        mobile_number: onlyDigits,
-      }));
-
-      // live validation
-      const error = validateField(
-        'mobile_number',
-        onlyDigits
-      );
-
-      setErrors((prev) => ({
-        ...prev,
-        mobile_number: error,
-      }));
-
+      setFormData((prev) => ({ ...prev, mobile_number: onlyDigits }));
+      const error = validateField('mobile_number', onlyDigits);
+      setErrors((prev) => ({ ...prev, mobile_number: error }));
       return;
     }
 
-    // ===== NAME RESTRICTION =====
     if (name === 'name') {
-
-      // block numbers & special chars
       if (/[^A-Za-z ]/.test(value)) return;
     }
 
-    const updatedValue =
-      type === 'checkbox'
-        ? checked
-        : value;
+    const updatedValue = type === 'checkbox' ? checked : value;
+    setFormData((prev) => ({ ...prev, [name]: updatedValue }));
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: updatedValue,
-    }));
-
-    // LIVE VALIDATION
-    const error = validateField(
-      name,
-      updatedValue
-    );
-
-    setErrors((prev) => ({
-      ...prev,
-      [name]: error,
-    }));
+    const error = validateField(name, updatedValue);
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
+
   const handleBlur = (e) => {
     const { name, value } = e.target;
-
     const error = validateField(name, value);
-
-    setErrors((prev) => ({
-      ...prev,
-      [name]: error,
-    }));
+    setErrors((prev) => ({ ...prev, [name]: error }));
   };
 
   const validateForm = () => {
     let newErrors = {};
-
     Object.keys(formData).forEach((field) => {
       if (field === 'subscribe') return;
-
-      const error = validateField(
-        field,
-        formData[field]
-      );
-
-      if (error) {
-        newErrors[field] = error;
-      }
+      const error = validateField(field, formData[field]);
+      if (error) newErrors[field] = error;
     });
-
     setErrors(newErrors);
-
     return Object.keys(newErrors).length === 0;
   };
 
@@ -226,10 +162,8 @@ export default function Register() {
   };
 
   // ================= REGISTER =================
-
   const handleRegister = async (e) => {
     e.preventDefault();
-
     setLoading(true);
 
     try {
@@ -239,33 +173,20 @@ export default function Register() {
         password: formData.password.trim(),
         mobile_number: formData.mobile_number,
         work_status: formData.work_status,
-        preferences: {
-          areasOfInterest,
-          preferredLocations,
-          careerGoal
-        }
+        preferences: { areasOfInterest, preferredLocations, careerGoal },
       });
 
       toast.success('Registration Successful!');
-
-      setTimeout(() => {
-        navigate('/login');
-      }, 2000);
+      setTimeout(() => navigate('/login'), 2000);
     } catch (err) {
       console.log(err);
       const message = err.message?.toLowerCase() || '';
-
       if (message.includes('email')) {
         setStep(1);
-        setErrors({
-          email: 'Email already exists',
-        });
+        setErrors({ email: 'Email already exists' });
       } else if (message.includes('mobile')) {
         setStep(1);
-        setErrors({
-          mobile_number:
-            'Mobile number already registered',
-        });
+        setErrors({ mobile_number: 'Mobile number already registered' });
       } else {
         toast.error('Registration Failed');
       }
@@ -275,10 +196,10 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-page">
+    <div className="auth-page register-page">
       <div className="register-card">
-
-        {/* LEFT */}
+        
+        {/* LEFT PANEL - ILLUSTRATION (Desktop वरच दिसेल, मोबाईलवर ऑटो-हाइड होईल) */}
         <div className="register-illustration-container">
           <div className="illustration-content-box">
             <div className="illustration-graphic">
@@ -287,285 +208,184 @@ export default function Register() {
 
             <div className="features-list">
               <h3>On registering, you can</h3>
-
               <ul>
                 <li>
                   <span className="check-icon">✓</span>
                   Build your profile and let recruiters find you
                 </li>
-
                 <li>
                   <span className="check-icon">✓</span>
                   Get job postings delivered right to your email
                 </li>
-
                 <li>
                   <span className="check-icon">✓</span>
                   Find a job and grow your career
                 </li>
               </ul>
             </div>
-          </div>
 
-          <div className="resume-badge">
-            AI Resume Analyzer
+            <div className="resume-badge">AI Resume Analyzer</div>
           </div>
         </div>
 
-        {/* RIGHT */}
+        {/* RIGHT PANEL - FORM FORM */}
         <div className="register-form-container">
           {step === 1 ? (
             <>
-              <h2 className="register-title">
-                Create your profile
-              </h2>
+              <h2 className="register-title">Create your profile</h2>
+              <p className="register-subtitle">Search & apply to jobs from India's no.1 job site</p>
 
-              <p className="register-subtitle">
-                Search & apply to jobs from India's no.1 job site
-              </p>
-
-              <form onSubmit={handleNextStep}>
-
+              <form onSubmit={handleNextStep} noValidate>
                 {/* NAME */}
                 <div className="form-group">
-                  <label className="form-label">
-                    Full name
-                  </label>
-
+                  <label className="form-label">Full name</label>
                   <input
                     type="text"
                     name="name"
-                    className={`form-input ${errors.name ? 'input-error' : ''
-                      }`}
+                    className={`form-input ${errors.name ? 'input-error' : ''}`}
                     placeholder="What is your name?"
                     value={formData.name}
                     onChange={handleChange}
                     onBlur={handleBlur}
-
                   />
-
-                  {errors.name && (
-                    <p className="error-text">
-                      {errors.name}
-                    </p>
-                  )}
+                  {errors.name && <p className="error-text">{errors.name}</p>}
                 </div>
 
                 {/* EMAIL */}
                 <div className="form-group">
-                  <label className="form-label">
-                    Email ID
-                  </label>
-
+                  <label className="form-label">Email ID</label>
                   <input
-                    type="text"
+                    type="email"
                     name="email"
-                    className={`form-input ${errors.email ? 'input-error' : ''
-                      }`}
+                    className={`form-input ${errors.email ? 'input-error' : ''}`}
                     placeholder="Tell us your Email ID"
                     value={formData.email}
                     onChange={handleChange}
                     onBlur={handleBlur}
-
                   />
-
-                  {errors.email && (
-                    <p className="error-text">
-                      {errors.email}
-                    </p>
-                  )}
+                  {errors.email && <p className="error-text">{errors.email}</p>}
                 </div>
 
                 {/* PASSWORD */}
                 <div className="form-group">
-                  <label className="form-label">
-                    Password
-                  </label>
-
+                  <label className="form-label">Password</label>
                   <input
                     type="password"
                     name="password"
-                    className={`form-input ${errors.password
-                      ? 'input-error'
-                      : ''
-                      }`}
-                    placeholder="Enter strong password"
+                    className={`form-input ${errors.password ? 'input-error' : ''}`}
+                    placeholder="Enter Password"
                     value={formData.password}
                     onChange={handleChange}
                     onBlur={handleBlur}
-
                   />
-
-                  {errors.password && (
-                    <p className="error-text">
-                      {errors.password}
-                    </p>
-                  )}
+                  {errors.password && <p className="error-text">{errors.password}</p>}
+                  <small className="password-instruction">
+                    Must contain uppercase, lowercase, number & special character.
+                  </small>
                 </div>
 
                 {/* MOBILE */}
                 <div className="form-group">
-                  <label className="form-label">
-                    Mobile number
-                  </label>
-
+                  <label className="form-label">Mobile number</label>
                   <input
                     type="text"
                     name="mobile_number"
-                    className={`form-input ${errors.mobile_number
-                      ? 'input-error'
-                      : ''
-                      }`}
+                    className={`form-input ${errors.mobile_number ? 'input-error' : ''}`}
                     placeholder="Enter mobile number"
                     value={formData.mobile_number}
                     onChange={handleChange}
                     onBlur={handleBlur}
-
                   />
-
-                  {errors.mobile_number && (
-                    <p className="error-text">
-                      {errors.mobile_number}
-                    </p>
-                  )}
+                  {errors.mobile_number && <p className="error-text">{errors.mobile_number}</p>}
                 </div>
 
                 {/* WORK STATUS */}
                 <div className="form-group">
-                  <label className="form-label">
-                    Work status
-                  </label>
-
+                  <label className="form-label">Work status</label>
                   <div className="work-status-options">
-
                     <div
-                      className={`status-card ${formData.work_status ===
-                        'experienced'
-                        ? 'selected'
-                        : ''
-                        }`}
-                      onClick={() =>
-                        setFormData({
-                          ...formData,
-                          work_status: 'experienced',
-                        })
-                      }
+                      className={`status-card ${formData.work_status === 'experienced' ? 'selected' : ''}`}
+                      onClick={() => setFormData({ ...formData, work_status: 'experienced' })}
                     >
                       <div className="status-content">
                         <h4>I'm experienced</h4>
-                        <p>
-                          I have work experience
-                        </p>
+                        <p>I have work experience</p>
                       </div>
-
-                      <div className="status-icon">
-                        💼
-                      </div>
+                      <div className="status-icon">💼</div>
                     </div>
 
                     <div
-                      className={`status-card ${formData.work_status ===
-                        'fresher'
-                        ? 'selected'
-                        : ''
-                        }`}
-                      onClick={() =>
-                        setFormData({
-                          ...formData,
-                          work_status: 'fresher',
-                        })
-                      }
+                      className={`status-card ${formData.work_status === 'fresher' ? 'selected' : ''}`}
+                      onClick={() => setFormData({ ...formData, work_status: 'fresher' })}
                     >
                       <div className="status-content">
                         <h4>I'm a fresher</h4>
-                        <p>
-                          I am a student
-                        </p>
+                        <p>I am a student</p>
                       </div>
-
-                      <div className="status-icon">
-                        🎓
-                      </div>
+                      <div className="status-icon">🎓</div>
                     </div>
-
                   </div>
-
-                  {errors.work_status && (
-                    <p className="error-text">
-                      {errors.work_status}
-                    </p>
-                  )}
                 </div>
 
-                {/* CHECKBOX */}
+                {/* SUBSCRIBE CHECKBOX */}
                 <div className="checkbox-group">
-                  <label>
+                  <label className="checkbox-label">
                     <input
                       type="checkbox"
                       name="subscribe"
                       checked={formData.subscribe}
                       onChange={handleChange}
                     />
-
-                    Send me updates & promotions
+                    <span>Send me updates & promotions</span>
                   </label>
                 </div>
 
-                {/* BUTTON */}
-                <button
-                  type="submit"
-                  className="btn-register"
-                >
+                {/* SUBMIT NEXT BUTTON */}
+                <button type="submit" className="btn-register">
                   Next ➔
                 </button>
 
-                {/* LOGIN LINK */}
+                {/* ALREADY HAVE ACCOUNT */}
                 <div className="register-login-link">
                   Already have an account?{' '}
-
-                  <Link to="/login">
+                  <Link to="/login" className="register-link">
                     Login
                   </Link>
                 </div>
-
               </form>
             </>
           ) : (
             <>
+              {/* STEP 2 - PREFERENCES */}
               <div className="preferences-header">
                 <button type="button" className="btn-back-step" onClick={() => setStep(1)}>
                   ← Back
                 </button>
                 <h2 className="register-title">Your preferences</h2>
               </div>
-              <p className="register-subtitle">
-                Help us personalize your internship search experience.
-              </p>
+              <p className="register-subtitle">Help us personalize your internship search experience.</p>
 
               <form onSubmit={handleRegister}>
                 {/* AREA OF INTEREST */}
                 <div className="form-group">
                   <label className="form-label">Area(s) of interest</label>
-                  <div className="search-tag-input-container">
-                    <input
-                      type="text"
-                      className="form-input"
-                      placeholder="e.g. Graphic Design"
-                      value={interestSearch}
-                      onChange={(e) => setInterestSearch(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          if (interestSearch.trim() && !areasOfInterest.includes(interestSearch.trim())) {
-                            setAreasOfInterest([...areasOfInterest, interestSearch.trim()]);
-                            setInterestSearch('');
-                          }
+                  <input
+                    type="text"
+                    className="form-input"
+                    placeholder="e.g. Graphic Design"
+                    value={interestSearch}
+                    onChange={(e) => setInterestSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault();
+                        if (interestSearch.trim() && !areasOfInterest.includes(interestSearch.trim())) {
+                          setAreasOfInterest([...areasOfInterest, interestSearch.trim()]);
+                          setInterestSearch('');
                         }
-                      }}
-                    />
-                  </div>
-
-                  {/* Selected tags */}
+                      }
+                    }}
+                  />
+                  
                   <div className="selected-tags-container">
                     {areasOfInterest.map((interest) => (
                       <span key={interest} className="preference-tag-chip">
@@ -580,62 +400,11 @@ export default function Register() {
                       </span>
                     ))}
                   </div>
-
-                  <div className="suggestions-meta-block">
-                    <span>Also select the following to get more opportunities:</span>
-                    <div className="suggested-pills-row">
-                      {['Film Making', 'Videography', 'Cinematography'].map((suggestion) => (
-                        <button
-                          key={suggestion}
-                          type="button"
-                          className="suggestion-pill-btn"
-                          onClick={() => {
-                            if (!areasOfInterest.includes(suggestion)) {
-                              setAreasOfInterest([...areasOfInterest, suggestion]);
-                            }
-                          }}
-                        >
-                          + {suggestion}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className="popular-interests-block">
-                    <label className="form-label-secondary">Popular career interests</label>
-                    <div className="interests-grid-pills">
-                      {[
-                        'Sales', 'Data Entry', 'Digital Marketing', 'Web Development', 
-                        'Marketing', 'Human Resources (HR)', 'General Management', 
-                        'Social Media Marketing', 'Finance', 'Software Development', 
-                        'Telecalling', 'Market/Business Research', 'Content Writing', 
-                        'Accounts', 'Project Management', 'Client Servicing', 'Operations'
-                      ].map((interest) => {
-                        const isSelected = areasOfInterest.includes(interest);
-                        return (
-                          <button
-                            key={interest}
-                            type="button"
-                            className={`interest-pill-option ${isSelected ? 'selected' : ''}`}
-                            onClick={() => {
-                              if (isSelected) {
-                                setAreasOfInterest(areasOfInterest.filter((i) => i !== interest));
-                              } else {
-                                setAreasOfInterest([...areasOfInterest, interest]);
-                              }
-                            }}
-                          >
-                            {interest} {isSelected ? '✓' : '+'}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
 
                 {/* PREFERRED CITY */}
-                <div className="form-group" style={{ marginTop: '2rem' }}>
-                  <label className="form-label">Preferred city for jobs/internships (Maximum 3)</label>
+                <div className="form-group" style={{ marginTop: '1.5rem' }}>
+                  <label className="form-label">Preferred city (Maximum 3)</label>
                   <input
                     type="text"
                     className="form-input"
@@ -652,8 +421,6 @@ export default function Register() {
                       }
                     }}
                   />
-
-                  {/* Selected locations */}
                   <div className="selected-tags-container">
                     {preferredLocations.map((loc) => (
                       <span key={loc} className="preference-tag-chip location-chip">
@@ -668,43 +435,17 @@ export default function Register() {
                       </span>
                     ))}
                   </div>
-
-                  <div className="popular-interests-block">
-                    <div className="interests-grid-pills">
-                      {['Pune', 'Mumbai', 'Delhi / NCR', 'Bangalore', 'Hyderabad', 'Chennai'].map((loc) => {
-                        const isSelected = preferredLocations.includes(loc);
-                        return (
-                          <button
-                            key={loc}
-                            type="button"
-                            className={`interest-pill-option ${isSelected ? 'selected' : ''}`}
-                            onClick={() => {
-                              if (isSelected) {
-                                setPreferredLocations(preferredLocations.filter((l) => l !== loc));
-                              } else if (preferredLocations.length < 3) {
-                                setPreferredLocations([...preferredLocations, loc]);
-                              } else {
-                                toast.warning('Maximum 3 preferred cities allowed.');
-                              }
-                            }}
-                          >
-                            {loc} {isSelected ? '✓' : '+'}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
                 </div>
 
                 {/* CAREER GOAL */}
-                <div className="form-group" style={{ marginTop: '2rem' }}>
+                <div className="form-group" style={{ marginTop: '1.5rem' }}>
                   <label className="form-label">What is your current career goal?</label>
                   <div className="career-goals-vertical-list">
                     {[
                       'Get an online degree from a premium institute in India',
                       'Go for study abroad',
                       'Enroll in job-guaranteed training to get a job',
-                      'Prepare for government exams'
+                      'Prepare for government exams',
                     ].map((goal) => (
                       <label key={goal} className="career-goal-radio-option">
                         <input
@@ -719,13 +460,8 @@ export default function Register() {
                   </div>
                 </div>
 
-                {/* REGISTER BUTTON */}
                 <div className="preferences-form-footer">
-                  <button
-                    type="submit"
-                    className="btn-register btn-preferences-save"
-                    disabled={loading}
-                  >
+                  <button type="submit" className="btn-register btn-preferences-save" disabled={loading}>
                     {loading ? 'Saving Preferences...' : 'Save & Register ➔'}
                   </button>
                 </div>

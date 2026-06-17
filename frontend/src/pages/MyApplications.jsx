@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getMyApplications } from '../services/api';
+import { coursesData } from '../data/coursesData';
 import { toast } from 'react-toastify';
 import './MyApplications.css';
 
@@ -299,69 +300,26 @@ export default function MyApplications() {
           </p>
 
           <div className="courses-recommendations-grid">
-            {/* Card 1 */}
-            <div className="course-card gradient-purple">
-              <div className="course-visual-top">
-                <span className="course-tech-badge">Indigo AI</span>
-                <span className="course-duration">8 Weeks</span>
-              </div>
-              <div className="course-card-body">
-                <h3>Artificial Intelligence & Deep Learning</h3>
-                <p>Master machine learning algorithms, Neural Networks, and generative models.</p>
-                <div className="course-card-footer">
-                  <span className="course-rating">⭐ 4.9 (1.2k reviews)</span>
-                  <span className="view-course-arrow">View course ➔</span>
+            {coursesData.map((course) => (
+              <div 
+                key={course.id} 
+                className={`course-card ${course.gradient}`}
+                onClick={() => navigate(`/course/${course.id}`)}
+              >
+                <div className="course-visual-top">
+                  <span className="course-tech-badge">{course.badge}</span>
+                  <span className="course-duration">{course.duration}</span>
+                </div>
+                <div className="course-card-body">
+                  <h3>{course.title}</h3>
+                  <p>{course.shortDescription}</p>
+                  <div className="course-card-footer">
+                    <span className="course-rating">⭐ {course.rating} ({(course.reviews / 1000).toFixed(1)}k reviews)</span>
+                    <span className="view-course-arrow">Read more ➔</span>
+                  </div>
                 </div>
               </div>
-            </div>
-
-            {/* Card 2 */}
-            <div className="course-card gradient-emerald">
-              <div className="course-visual-top">
-                <span className="course-tech-badge">UX Design</span>
-                <span className="course-duration">6 Weeks</span>
-              </div>
-              <div className="course-card-body">
-                <h3>UX/UI Masterclass & Figma Pro</h3>
-                <p>Learn user research, wireframing, high-fidelity prototypes, and component styling.</p>
-                <div className="course-card-footer">
-                  <span className="course-rating">⭐ 4.8 (2.4k reviews)</span>
-                  <span className="view-course-arrow">View course ➔</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 3 */}
-            <div className="course-card gradient-slate">
-              <div className="course-visual-top">
-                <span className="course-tech-badge">Node & React</span>
-                <span className="course-duration">12 Weeks</span>
-              </div>
-              <div className="course-card-body">
-                <h3>Full Stack Web Development</h3>
-                <p>Build secure databases, scale API routes, and deploy frontends with Vite & Tailwind.</p>
-                <div className="course-card-footer">
-                  <span className="course-rating">⭐ 4.9 (4.8k reviews)</span>
-                  <span className="view-course-arrow">View course ➔</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4 */}
-            <div className="course-card gradient-sunset">
-              <div className="course-visual-top">
-                <span className="course-tech-badge">Marketing</span>
-                <span className="course-duration">4 Weeks</span>
-              </div>
-              <div className="course-card-body">
-                <h3>Growth Marketing & Brand Building</h3>
-                <p>Understand user acquisition loops, campaign analytics, SEO, and copywriting tactics.</p>
-                <div className="course-card-footer">
-                  <span className="course-rating">⭐ 4.7 (890 reviews)</span>
-                  <span className="view-course-arrow">View course ➔</span>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 

@@ -12,9 +12,12 @@ import OpportunityDetails from './pages/OpportunityDetails';
 import ApplyJob from './pages/ApplyJob';
 import EditPreferences from './pages/EditPreferences';
 import EditResume from './pages/EditResume';
+import ProfileEditor from './pages/ProfileEditor';
 import MyApplications from './pages/MyApplications';
 import Applicants from './pages/Applicants';
 import ContactUs from './pages/ContactUs';
+import CourseDetails from './pages/CourseDetails';
+import UserProfile from './pages/UserProfile';
 import Navbar from './components/Navbar';
 import SavedJobs from './pages/SavedJobs';
 import 'react-toastify/dist/ReactToastify.css';
@@ -63,8 +66,12 @@ function AppContent() {
         <Route path="/edit-preferences" element={<EditPreferences />} />
         <Route path="/edit-resume" element={<EditResume />} />
         <Route path="/applications" element={<MyApplications />} />
+        <Route path="/profile/edit" element={<ProfileEditor />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route path="/company/applicants" element={<Applicants />} />
         <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/course/:courseId" element={<CourseDetails />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/opportunity/:id" element={<OpportunityDetails />} />
         <Route path="/apply/:id" element={<ApplyJob />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
