@@ -113,7 +113,7 @@ const handleSearch = (e) => {
                   Jobs
                 </Link>
 
-                <Link to="/ContactUs" className="nav-link">
+                <Link to="/contact-us" className="nav-link">
                   Contact Us
                 </Link>
               </>
