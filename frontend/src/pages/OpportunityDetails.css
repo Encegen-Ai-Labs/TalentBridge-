@@ -1,109 +1,631 @@
-/* OpportunityDetails.css – detailed job view styling */
-
-/* Reuse base page layout */
-.opportunities-page {
+/* Custom resets & precise layouts matching design system */
+.opportunity-details-page {
   min-height: 100vh;
-  background: #f0f9ff; /* soft light blue gradient background */
-  padding: 2rem;
+  background-color: #f1f5f9;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  padding: 1.5rem 0 4rem;
+  color: #1e293b;
+  -webkit-font-smoothing: antialiased;
 }
 
-.opportunities-container {
-  max-width: 800px;
+.container-wrapper {
+  max-width: 1200px;
   margin: 0 auto;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-  padding: 2rem;
+  padding: 0 1.25rem;
 }
 
-.main-title {
-  font-size: 2rem;
-  font-weight: 800;
-  color: #111827;
-  margin-bottom: 0.5rem;
-}
-
-.company-name {
-  font-size: 1.1rem;
-  color: #4b5563;
-  margin-bottom: 1.5rem;
-}
-
-.section {
-  margin-top: 1.5rem;
-}
-
-.section h3 {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #111827;
-  margin-bottom: 0.5rem;
-}
-
-.section p {
-  line-height: 1.6;
-  color: #374151;
-}
-
-/* Form styling */
-.apply-form {
-  margin-top: 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-}
-
-.form-group label {
-  font-weight: 600;
-  margin-bottom: 0.25rem;
-  color: #111827;
-}
-
-.form-group input,
-.form-group textarea,
-.form-group select {
-  padding: 0.5rem 0.75rem;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 0.95rem;
-  font-family: inherit;
-  background: #f9fafb;
-  resize: vertical;
-}
-
-.form-group textarea {
-  min-height: 80px;
-}
-
-.apply-btn {
-  background: #22c55e;
-  color: #fff;
-  font-weight: 700;
-  padding: 0.75rem 1rem;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s ease;
-}
-
-.apply-btn:hover {
-  background: #16a34a;
-}
-
+/* Precise styling for clean navigational Back CTA */
 .back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
   background: transparent;
   border: none;
-  color: #2563eb;
+  color: #15803d;
+  font-weight: 600;
   font-size: 0.95rem;
   cursor: pointer;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  padding: 0.25rem 0;
+  transition: opacity 0.2s;
 }
 
 .back-btn:hover {
-  text-decoration: underline;
+  opacity: 0.8;
+}
+
+/* Main Dashboard Structural Layout Grid split */
+.opportunity-details-grid {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* Structural Card Formats matching original image shadow rules */
+.detail-hero-card, 
+.content-card,
+.structural-details-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02), 0 4px 12px rgba(0, 0, 0, 0.03);
+  padding: 1.75rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+/* Hero Content Formations */
+.hero-top-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.hero-identity {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.company-logo-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 0.75rem;
+  background: #f0fdf4;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid #bbf7d0;
+}
+
+.main-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 0.25rem 0;
+}
+
+.company-name {
+  font-size: 0.95rem;
+  color: #16a34a;
+  font-weight: 600;
+  display: block;
+}
+
+/* Primary Top Action Modifiers */
+.detail-hero-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.primary-cta-btn {
+  background: #22c55e;
+  color: #ffffff;
+  border: none;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border-radius: 2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.primary-cta-btn:hover {
+  background: #16a34a;
+}
+
+.secondary-cta-btn {
+  background: #ffffff;
+  color: #16a34a;
+  border: 1px solid #22c55e;
+  font-weight: 600;
+  padding: 0.5rem 1.5rem;
+  border-radius: 2rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.secondary-cta-btn:hover {
+  background: #f0fdf4;
+}
+
+/* Horizontal Functional Metadata Row */
+.job-meta-row {
+  display: flex;
+  gap: 1.5rem;
+  margin: 1.25rem 0;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+/* Skill Highlights Tag System */
+.sub-section-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 0 0 0.75rem 0;
+}
+
+.highlight-tags-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.highlight-tag {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.35rem 0.75rem;
+  border-radius: 0.35rem;
+}
+
+.tag-photoshop { background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; }
+.tag-illustrator { background: #fff7ed; color: #9a3412; border: 1px solid #ffedd5; }
+.tag-indesign { background: #f0fdf4; color: #166534; border: 1px solid #dcfce7; }
+.tag-branding { background: #f5f3ff; color: #5b21b6; border: 1px solid #e9e3ff; }
+.tag-print { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+/* Checklist Formatting Module Rules */
+.card-heading-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 1rem 0;
+}
+
+.decorative-border {
+  position: relative;
+  padding-left: 0.75rem;
+}
+
+.decorative-border::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  width: 3px;
+  background: #22c55e;
+  border-radius: 2px;
+}
+
+.responsibilities-checklist {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.checklist-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.check-icon-wrapper {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 2px;
+  flex-shrink: 0;
+}
+
+.checklist-item p {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.45;
+}
+
+/* Modular Panels Layout Mapping */
+.detail-panels-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.card-body-paragraph {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.education-block p {
+  margin: 0 0 0.5rem 0;
+}
+.education-block p:last-child {
+  margin-bottom: 0;
+}
+
+/* Structural Parameter Summary Blocks */
+.structural-details-card {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 1.25rem 1.75rem;
+}
+
+.struct-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.struct-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.struct-value {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Company Branding Module Footer Styling */
+.company-footer-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.25rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #f1f5f9;
+}
+
+.avatar-stack {
+  display: flex;
+  align-items: center;
+}
+
+.avatar-stack img {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 2px solid #ffffff;
+  margin-right: -8px;
+  object-fit: cover;
+}
+
+.avatar-counter {
+  height: 28px;
+  padding: 0 0.5rem;
+  border-radius: 14px;
+  background: #e2e8f0;
+  color: #475569;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+  margin-left: 12px;
+}
+
+.follow-company-btn {
+  background: transparent;
+  border: none;
+  color: #16a34a;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+/* Contextual Recommender UI Cards */
+.similar-jobs-section {
+  margin-top: 2rem;
+}
+
+.section-title-label {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 0 0 1rem 0;
+}
+
+.similar-jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.similar-job-card {
+  background: #ffffff;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 1px solid rgba(226, 232, 240, 0.7);
+}
+
+.similar-job-main {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.similar-icon-box {
+  width: 36px;
+  height: 36px;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.similar-icon-box.v-designer { background: #f0fdf4; }
+.similar-icon-box.ui-artist { background: #fff7ed; }
+
+.similar-job-info h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.15rem 0;
+}
+
+.similar-company {
+  font-size: 0.8rem;
+  font-weight: 500;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+.text-green { color: #16a34a; }
+
+.similar-meta {
+  display: flex;
+  gap: 1rem;
+  color: #94a3b8;
+  font-size: 0.75rem;
+}
+
+.similar-salary-range {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+}
+
+/* ==========================================================================
+   Sidebar Panels Styling Rules
+   ========================================================================== */
+.sidebar-container-card {
+  background: #ffffff;
+  border-radius: 1rem;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(226, 232, 240, 0.6);
+}
+
+.sidebar-section-heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #334155;
+  margin: 0 0 1.25rem 0;
+}
+
+.recommended-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.rec-item {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.rec-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 0.35rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+.bg-purple { background: #edd8ff; color: #6b21a8; }
+.bg-blue { background: #e0f2fe; color: #0369a1; }
+.bg-teal { background: #ccfbf1; color: #0f766e; }
+
+.rec-details h4 {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin: 0 0 0.15rem 0;
+}
+
+.rec-company {
+  font-size: 0.75rem;
+  color: #64748b;
+  display: block;
+}
+
+.rec-meta {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  display: block;
+  margin-top: 0.15rem;
+}
+
+.view-matches-btn {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  padding: 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #475569;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.view-matches-btn:hover {
+  background: #f8fafc;
+}
+
+/* Salary Distribution Insight Panel */
+.salary-insights-card {
+  background: linear-gradient(135deg, #bbf7d0 0%, #86efac 100%);
+  border: none;
+}
+
+.salary-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #14532d;
+  margin-bottom: 1.25rem;
+}
+
+.salary-card-header h3 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* Histogram Chart Representation styling */
+.salary-bar-chart {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 60px;
+  margin-bottom: 1.25rem;
+  padding: 0 0.5rem;
+}
+
+.chart-bar {
+  width: 12%;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 2px 2px 0 0;
+}
+
+.chart-bar.active {
+  background: #16a34a;
+}
+
+/* Fixed metric height percentages mapping to visualization classes */
+.h-20 { height: 20%; }
+.h-30 { height: 30%; }
+.h-40 { height: 40%; }
+.h-50 { height: 50%; }
+.h-60 { height: 60%; }
+.h-90 { height: 85%; }
+
+.salary-insights-text {
+  font-size: 0.82rem;
+  color: #14532d;
+  line-height: 1.45;
+  margin: 0 0 1.25rem 0;
+}
+
+.see-details-insights-btn {
+  width: 100%;
+  background: #ffffff;
+  border: none;
+  padding: 0.65rem;
+  border-radius: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #16a34a;
+  cursor: pointer;
+}
+
+/* API Generic Processing Utilities */
+.loading-wrapper {
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #22c55e;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   Responsive Adaptability Layout Breakpoints
+   ========================================================================== */
+@media (max-width: 992px) {
+  .opportunity-details-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-sidebar {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+  
+  .sidebar-container-card {
+    margin-bottom: 0;
+  }
+}
+
+@media (max-width: 680px) {
+  .detail-sidebar {
+    grid-template-columns: 1fr;
+  }
+  
+  .detail-panels-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .structural-details-card {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+  
+  .hero-top-row {
+    flex-direction: column;
+    gap: 1.25rem;
+  }
+  
+  .detail-hero-actions {
+    width: 100%;
+  }
+  
+  .primary-cta-btn, .secondary-cta-btn {
+    flex: 1;
+    text-align: center;
+  }
 }

@@ -9,6 +9,7 @@ import CompanyProfile from './pages/CompanyProfile';
 import PostJob from './pages/PostJob';
 import StudentOpportunities from './pages/StudentOpportunities';
 import OpportunityDetails from './pages/OpportunityDetails';
+import ApplyJob from './pages/ApplyJob';
 import EditPreferences from './pages/EditPreferences';
 import EditResume from './pages/EditResume';
 import ProfileEditor from './pages/ProfileEditor';
@@ -72,6 +73,8 @@ function AppContent() {
         <Route path="/course/:courseId" element={<CourseDetails />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/opportunity/:id" element={<OpportunityDetails />} />
+        <Route path="/apply/:id" element={<ApplyJob />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
     </>
   );

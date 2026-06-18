@@ -339,7 +339,11 @@ export default function StudentOpportunities() {
                       <div className="job-card">
                         <div className="card-layout-wrapper">
                           <div className="selection-column">
-                            <input type="checkbox" className="job-select-checkbox" />
+                            <input
+                              type="checkbox"
+                              className="job-select-checkbox"
+                              onChange={() => navigate(`/opportunity/${id}`, { state: { job } })}
+                            />
                           </div>
 
                           <div className="content-column">
