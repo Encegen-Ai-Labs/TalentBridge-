@@ -1,561 +1,504 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { getStudentProfile, updateStudentProfile } from '../services/api';
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { toast } from 'react-toastify';
+import { getStudentProfile, updateStudentProfile, getPreferences, updatePreferences } from '../services/api';
 import './ProfileEditor.css';
 
-const defaultResumeData = {
-  careerPreferences: {
-    preferredJobType: '',
-    preferredLocations: '',
-    availabilityToWork: ''
-  },
-  education: [],
-  skills: [],
-  languages: [],
-  internships: [],
-  projects: [],
-  summary: '',
-  accomplishments: {
-    certifications: [],
-    awards: [],
-    clubs: []
-  },
-  competitiveExams: [],
-  employment: [],
-  academicAchievements: [],
-  resumeFile: null
+// ─── Completion weights ────────────────────────────────────
+const WEIGHTS = {
+  name: 5, phone: 3, email: 3, degree: 3, college: 3,
+  location: 2, gender: 2, dob: 2,
+  prefJobType: 4, prefLocation: 4,
+  skills: 8, languages: 5, summary: 8,
+  education: 8, internships: 8, projects: 6,
+  employment: 6, certifications: 4, awards: 3,
+  competitiveExams: 4, academicAchievements: 4, resume: 8,
 };
+const TOTAL_WEIGHT = Object.values(WEIGHTS).reduce((a, b) => a + b, 0);
 
-function safeParseJson(value) {
-  if (!value) return null;
-  if (typeof value === 'object') return value;
-  try { return JSON.parse(value); } catch (e) { return null; }
+function calcCompletion(p) {
+  const check = {
+    name: !!p.name?.trim(),
+    phone: !!p.phone?.trim(),
+    email: !!p.email?.trim(),
+    degree: !!p.degree?.trim(),
+    college: !!p.college?.trim(),
+    location: !!p.location?.trim(),
+    gender: !!p.gender,
+    dob: !!p.dob,
+    prefJobType: !!p.prefJobType?.trim(),
+    prefLocation: !!p.prefLocation?.trim(),
+    skills: p.skills?.length > 0,
+    languages: p.languages?.length > 0,
+    summary: !!p.summary?.trim(),
+    education: p.education?.length > 0,
+    internships: p.internships?.length > 0,
+    projects: p.projects?.length > 0,
+    employment: p.employment?.length > 0,
+    certifications: p.certifications?.length > 0,
+    awards: p.awards?.length > 0,
+    competitiveExams: p.competitiveExams?.length > 0,
+    academicAchievements: p.academicAchievements?.length > 0,
+    resume: !!p.resume?.fileName,
+  };
+  const earned = Object.entries(WEIGHTS).reduce((s, [k, w]) => s + (check[k] ? w : 0), 0);
+  return Math.round((earned / TOTAL_WEIGHT) * 100);
 }
 
+function getMissingTips(p) {
+  const tips = [];
+  if (!p.phone?.trim()) tips.push({ label: 'Add mobile number', delta: 3 });
+  if (!p.internships?.length) tips.push({ label: 'Add Internship', delta: 8 });
+  if (!p.competitiveExams?.length) tips.push({ label: 'Add competitive exam', delta: 4 });
+  if (!p.projects?.length) tips.push({ label: 'Add a project', delta: 6 });
+  if (!p.certifications?.length) tips.push({ label: 'Add Certification', delta: 4 });
+  if (!p.summary?.trim()) tips.push({ label: 'Add profile summary', delta: 8 });
+  if (!p.employment?.length) tips.push({ label: 'Add work experience', delta: 6 });
+  return tips.slice(0, 3);
+}
+
+// ─── SVG Progress Ring ─────────────────────────────────────
+function ProgressRing({ pct }) {
+  const r = 34, circ = 2 * Math.PI * r;
+  const color = pct < 40 ? '#ef4444' : pct < 70 ? '#f97316' : '#16a34a';
+  return (
+    <div className="pe-ring">
+      <svg width="84" height="84" style={{ transform: 'rotate(-90deg)' }}>
+        <circle cx="42" cy="42" r={r} fill="none" stroke="#e2e8f0" strokeWidth="6" />
+        <circle cx="42" cy="42" r={r} fill="none" stroke={color} strokeWidth="6"
+          strokeLinecap="round"
+          style={{ strokeDasharray: circ, strokeDashoffset: circ * (1 - pct / 100), transition: 'stroke-dashoffset .5s ease' }}
+        />
+      </svg>
+      <div className="pe-ring-label">
+        <span className="pe-ring-pct">{pct}%</span>
+        <span className="pe-ring-sub">Profile</span>
+      </div>
+    </div>
+  );
+}
+
+const EMPTY = {
+  name: '', email: '', phone: '', degree: '', college: '',
+  location: '', gender: '', dob: '', summary: '',
+  skills: [], languages: [], education: [],
+  internships: [], projects: [], employment: [],
+  certifications: [], awards: [], competitiveExams: [],
+  academicAchievements: [], resume: null,
+  prefJobType: '', prefLocation: '', availability: '',
+};
+
 export default function ProfileEditor() {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+  const fileRef = useRef(null);
+  const [pageLoading, setPageLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [activeFormSection, setActiveFormSection] = useState(null);
+  const [profile, setProfile] = useState(EMPTY);
+  const [activeLink, setActiveLink] = useState('preference');
   
-  // Local item states for managing dynamic lists (Add/Edit modals or inline forms)
-  const [editingItem, setEditingItem] = useState(null);
+  // New local state to handle real-time input addition for collections without standard forms
+  const [newSkill, setNewSkill] = useState('');
 
-  const [profile, setProfile] = useState({
-    name: '',
-    degree: '',
-    college: '',
-    location: '',
-    gender: '',
-    dob: '',
-    phone: '',
-    email: '',
-    resumeUrl: '',
-    strengthPercent: 0
-  });
-
-  const [resumeData, setResumeData] = useState(defaultResumeData);
-
+  // ── Fetch on mount ────────────────────────────────────────
   useEffect(() => {
-    fetchProfileDetails();
-  }, []);
+    const token = localStorage.getItem('token');
+    if (!token) { setPageLoading(false); return; }
 
-  const getStrengthPercent = (profileData, resumeDataState) => {
-    const items = [
-      profileData.name,
-      profileData.phone,
-      profileData.email,
-      profileData.location,
-      profileData.gender,
-      profileData.dob,
-      resumeDataState.summary,
-      resumeDataState.skills.length,
-      resumeDataState.education.length,
-      resumeDataState.projects.length,
-      resumeDataState.internships.length
-    ];
-    const filled = items.filter((value) => {
-      if (typeof value === 'number') return value > 0;
-      return value && value.toString().trim().length > 0;
-    }).length;
-    return Math.round((filled / items.length) * 100);
-  };
-
-  const fetchProfileDetails = async () => {
-    try {
-      setLoading(true);
-      const data = await getStudentProfile();
-      if (data) {
-        const user = data.user || {};
-        const profileRecord = data.profile || {};
-        const resumeJson = safeParseJson(profileRecord.resume_data) || {};
-        const education = Array.isArray(resumeJson.education) ? resumeJson.education : [];
+    Promise.all([
+      getStudentProfile().catch(() => null),
+      getPreferences().catch(() => null),
+    ]).then(([profileRes, prefsRes]) => {
+      if (profileRes) {
+        const { user, profile: sp } = profileRes;
+        const rd = sp?.resume_data || {};
 
         setProfile({
-          name: user.name || `${resumeJson.first_name || ''} ${resumeJson.last_name || ''}`.trim(),
-          degree: education[0]?.qualification || '',
-          college: education[0]?.institution || '',
-          location: resumeJson.location || profileRecord.branch || '',
-          gender: resumeJson.gender || '',
-          dob: resumeJson.dob || '',
-          phone: user.mobile_number || '',
-          email: user.email || '',
-          resumeUrl: resumeJson.resumeUrl || profileRecord.resume_url || '',
-          strengthPercent: getStrengthPercent({
-            name: user.name || `${resumeJson.first_name || ''} ${resumeJson.last_name || ''}`.trim(),
-            phone: user.mobile_number || '',
-            email: user.email || '',
-            location: resumeJson.location || profileRecord.branch || '',
-            gender: resumeJson.gender || '',
-            dob: resumeJson.dob || ''
-          }, {
-            ...resumeJson,
-            skills: Array.isArray(resumeJson.skills) ? resumeJson.skills : typeof profileRecord.skills === 'string' ? profileRecord.skills.split(',').map((s) => s.trim()).filter(Boolean) : [],
-            education,
-            projects: Array.isArray(resumeJson.projects) ? resumeJson.projects : [],
-            internships: Array.isArray(resumeJson.internships) ? resumeJson.internships : []
-          })
-        });
-
-        setResumeData({
-          careerPreferences: {
-            ...defaultResumeData.careerPreferences,
-            ...(resumeJson.careerPreferences || {})
-          },
-          education,
-          skills: Array.isArray(resumeJson.skills) ? resumeJson.skills : typeof profileRecord.skills === 'string' ? profileRecord.skills.split(',').map((s) => s.trim()).filter(Boolean) : [],
-          languages: Array.isArray(resumeJson.languages) ? resumeJson.languages : [],
-          internships: Array.isArray(resumeJson.internships) ? resumeJson.internships : [],
-          projects: Array.isArray(resumeJson.projects) ? resumeJson.projects : [],
-          summary: resumeJson.summary || '',
-          accomplishments: {
-            certifications: Array.isArray(resumeJson.accomplishments?.certifications) ? resumeJson.accomplishments.certifications : [],
-            awards: Array.isArray(resumeJson.accomplishments?.awards) ? resumeJson.accomplishments.awards : [],
-            clubs: Array.isArray(resumeJson.accomplishments?.clubs) ? resumeJson.accomplishments.clubs : []
-          },
-          competitiveExams: Array.isArray(resumeJson.competitiveExams) ? resumeJson.competitiveExams : [],
-          employment: Array.isArray(resumeJson.employment) ? resumeJson.employment : [],
-          academicAchievements: Array.isArray(resumeJson.academicAchievements) ? resumeJson.academicAchievements : [],
-          resumeFile: resumeJson.resumeFile || null
+          name: user?.name || '',
+          email: user?.email || '',
+          phone: user?.mobile_number || '',
+          degree: sp?.branch || rd.degree || 'B.Sc',
+          college: rd.college || '',
+          location: rd.location || '',
+          gender: rd.gender || 'Male',
+          dob: rd.dob || '',
+          summary: rd.summary || '',
+          skills: rd.skills || (sp?.skills ? sp.skills.split(',').map(s => s.trim()).filter(Boolean) : []),
+          languages: rd.languages || [],
+          education: rd.education || [],
+          internships: rd.internships || [],
+          projects: rd.projects || [],
+          employment: rd.employment || [],
+          certifications: rd.certifications || [],
+          awards: rd.awards || [],
+          competitiveExams: rd.competitiveExams || [],
+          academicAchievements: rd.academicAchievements || [],
+          resume: rd.resume || (sp?.resume_url ? { fileName: sp.resume_url, uploadedDate: '' } : null),
+          prefJobType: prefsRes?.prefJobType || rd.prefJobType || 'Jobs, Internships',
+          prefLocation: prefsRes?.prefLocation || rd.prefLocation || '',
+          availability: prefsRes?.availability || rd.availability || 'Immediate joiner',
         });
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoading(false);
+    }).finally(() => setPageLoading(false));
+  }, []);
+
+  // ── Active section scroll tracking ───────────────────────
+  useEffect(() => {
+    const onScroll = () => {
+      const QUICK_LINKS = ['preference', 'education', 'key-skills', 'languages', 'profile-summary', 'employment', 'academic-achievements', 'resume'];
+      for (const id of [...QUICK_LINKS].reverse()) {
+        const el = document.getElementById(id);
+        if (el && el.getBoundingClientRect().top <= 140) {
+          setActiveLink(id); break;
+        }
+      }
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
+  const completionRate = useMemo(() => calcCompletion(profile), [profile]);
+  const missingTips = useMemo(() => getMissingTips(profile), [profile]);
+  const ringColor = completionRate < 40 ? '#ef4444' : completionRate < 70 ? '#f97316' : '#16a34a';
+
+  // ── Direct State Updates ───────────────────────────────────
+  const handleChange = (field, value) => {
+    setProfile(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleNestedArrayChange = (field, id, subField, value) => {
+    setProfile(prev => ({
+      ...prev,
+      [field]: prev[field].map(item => item.id === id ? { ...item, [subField]: value } : item)
+    }));
+  };
+
+  const addArrayItem = (field, defaultObj) => {
+    const newItem = { id: Math.random().toString(36).slice(2, 9), ...defaultObj };
+    setProfile(prev => ({ ...prev, [field]: [...prev[field], newItem] }));
+  };
+
+  const removeArrayItem = (field, id) => {
+    setProfile(prev => ({ ...prev, [field]: prev[field].filter(item => item.id !== id) }));
+  };
+
+  const handleAddSkill = (e) => {
+    if (e.key === 'Enter' && newSkill.trim()) {
+      if (!profile.skills.includes(newSkill.trim())) {
+        setProfile(prev => ({ ...prev, skills: [...prev.skills, newSkill.trim()] }));
+      }
+      setNewSkill('');
     }
   };
 
-  const handleProfileChange = (key, value) => {
-    setProfile(prev => ({ ...prev, [key]: value }));
-  };
-
-  const handlePreferenceChange = (key, value) => {
-    setResumeData(prev => ({
-      ...prev,
-      careerPreferences: { ...prev.careerPreferences, [key]: value }
-    }));
-  };
-
-  // List Management handlers
-  const deleteListItem = (section, id) => {
-    setResumeData(prev => ({
-      ...prev,
-      [section]: prev[section].filter(item => item.id !== id)
-    }));
-    toast.info('Item removed.');
-  };
-
-  const deleteSkill = (skillToDelete) => {
-    setResumeData(prev => ({
-      ...prev,
-      skills: prev.skills.filter(s => s !== skillToDelete)
-    }));
-  };
-
-  const addSkill = (newSkill) => {
-    if (!newSkill) return;
-    setResumeData(prev => ({
-      ...prev,
-      skills: [...prev.skills, newSkill]
-    }));
-  };
-
-  const saveProfile = async () => {
+  // ── Save to Backend Trigger ────────────────────────────────
+  const handleSave = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) { toast.error('Please login to save your profile'); return; }
     setSaving(true);
     try {
-      const mergedResumeData = {
-        ...resumeData,
-        gender: profile.gender,
-        dob: profile.dob,
-        location: profile.location,
-        first_name: profile.name?.split(' ')[0] || '',
-        last_name: profile.name?.split(' ').slice(1).join(' ') || ''
-      };
-
-      await updateStudentProfile({
-        name: profile.name,
-        mobile_number: profile.phone,
-        branch: profile.location,
-        year: resumeData.education[0]?.qualification || '',
-        skills: resumeData.skills.join(', '),
-        resume_url: profile.resumeUrl || '',
-        resume_data: JSON.stringify(mergedResumeData)
-      });
-
-      toast.success('Profile configurations updated successfully.');
-      await fetchProfileDetails();
-      setActiveFormSection(null);
-    } catch (error) {
-      console.error(error);
-      toast.error('Failed to save profile structural updates.');
+      const resume_data = { ...profile };
+      await Promise.all([
+        updateStudentProfile({
+          name: profile.name,
+          mobile_number: profile.phone,
+          skills: profile.skills.join(', '),
+          branch: profile.degree,
+          resume_data,
+          work_status: null,
+        }),
+        profile.prefJobType
+          ? updatePreferences({ prefJobType: profile.prefJobType, prefLocation: profile.prefLocation, availability: profile.availability })
+          : Promise.resolve(),
+      ]);
+      toast.success('Profile synced with backend successfully!');
+    } catch (err) {
+      toast.error(err.message || 'Failed to save profile');
     } finally {
       setSaving(false);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="profile-app-container loading-wrapper">
-        <div className="app-spinner" />
-        <p>Assembling profile layout...</p>
-      </div>
-    );
-  }
+  const handleResumeChange = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { toast.error('Max file size 2MB'); return; }
+    handleChange('resume', { fileName: file.name, uploadedDate: new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) });
+    toast.info('Resume selected. Remember to click "Save Changes"');
+    e.target.value = '';
+  };
+
+  if (pageLoading) return <div className="pe-fullpage-loader"><div className="pe-spinner-lg" /><p>Loading profile...</p></div>;
 
   return (
-    <div className="profile-app-container">
-      {/* Top action header bar */}
-      <div className="app-topbar-nav">
-        <button className="nav-back-button" onClick={() => navigate('/profile')}>
-          <span className="arrow">←</span> View & Edit
-        </button>
-        <div className="nav-right-actions">
-          <span className="insights-tab-trigger active">Activity insights</span>
-        </div>
-      </div>
+    <div className="pe-wrap">
+      <nav className="pe-tabs">
+        <button className="pe-tab active">← View &amp; Edit</button>
+        <button className="pe-tab">Activity insights</button>
+      </nav>
 
-      <div className="profile-dashboard-layout">
-        
-        {/* Main interactive form card groups */}
-        <main className="dashboard-main-content">
-          
-          {/* Top Profile Summary Widget Grid */}
-          <div className="profile-hero-card">
-            <div className="hero-identity-block">
-              <div className="completion-ring-box">
-                <svg className="progress-ring" width="80" height="80">
-                  <circle className="progress-ring-bg" stroke="#f1f5f9" strokeWidth="6" fill="transparent" r="34" cx="40" cy="40"/>
-                  <circle className="progress-ring-bar" stroke="#f97316" strokeWidth="6" fill="transparent" r="34" cx="40" cy="40" style={{ strokeDasharray: 213, strokeDashoffset: 213 - (213 * profile.strengthPercent) / 100 }}/>
-                </svg>
-                <div className="progress-text">
-                  <span className="percent">{profile.strengthPercent}%</span>
-                  <span className="label">Approval pending</span>
-                </div>
-              </div>
-
-              <div className="identity-details">
-                <div className="name-header">
-                  <h2>{profile.name || 'Unnamed student'}</h2>
-                  <button className="icon-edit-pencil" onClick={() => setActiveFormSection('identity')}>✏️</button>
-                </div>
-                <p className="degree-subtext">{profile.degree || 'Degree not set'}</p>
-                <p className="college-subtext">{profile.college || 'College not set'}</p>
-                
-                <div className="meta-contact-row">
-                  <span>📍 {profile.location || 'Location not set'}</span>
-                  <span>👤 {profile.gender || 'Gender not set'}</span>
-                  <span>📅 {profile.dob || 'DOB not set'}</span>
+      <div className="pe-body">
+        {/* LEFT SIDEBAR LINKS */}
+        <aside className="pe-sidebar">
+          <div className="pe-sidebar-inner">
+            <div className="pe-comp-card">
+              <div className="pe-comp-top">
+                <ProgressRing pct={completionRate} />
+                <div className="pe-comp-info">
+                  <div className="pe-comp-title">Profile Strength</div>
+                  <div className="pe-comp-status" style={{ color: ringColor }}>{completionRate}% complete</div>
                 </div>
               </div>
             </div>
 
-            <div className="hero-contact-block">
-              <div className="contact-item">
-                <span className="phone-icon">📞</span>
-                <span className="val">{profile.phone}</span>
-                <button className="verify-badge-btn">Verify</button>
-              </div>
-              <div className="contact-item">
-                <span className="email-icon">✉️</span>
-                <span className="val">{profile.email}</span>
-                <span className="verified-check-icon">✅</span>
-              </div>
-            </div>
-
-            <div className="hero-missing-prompts">
-              <ul>
-                <li><span>📝 Verify mobile</span> <span className="delta green">↑ 2%</span></li>
-                <li><span>📝 Add competitive exam</span> <span className="delta green">↑ 6%</span></li>
-                <li><span>📝 Add Internship</span> <span className="delta green">↑ 8%</span></li>
-              </ul>
-              <button className="add-missing-details-btn">Add 5 missing details</button>
+            <div className="pe-quicklinks">
+              <h4 className="pe-ql-title">Quick links</h4>
+              <nav className="pe-ql-nav">
+                {['preference', 'education', 'key-skills', 'languages', 'profile-summary', 'employment', 'academic-achievements', 'resume'].map(id => (
+                  <a key={id} href={`#${id}`} className={`pe-ql-link ${activeLink === id ? 'active' : ''}`}>
+                    {id.charAt(0).toUpperCase() + id.slice(1).replace('-', ' ')}
+                  </a>
+                ))}
+              </nav>
             </div>
           </div>
+        </aside>
 
-          {/* SECTION: Career Preferences */}
-          <section className="dashboard-section-card" id="preference">
-            <div className="section-card-header">
-              <h3>Your career preferences</h3>
-              <button className="action-trigger-btn edit" onClick={() => setActiveFormSection('preference')}>✏️</button>
+        {/* MAIN FORM PANEL */}
+        <main className="pe-main">
+          {/* PROFILE IDENTITY AREA */}
+          <section className="pe-hero">
+            <div className="pe-hero-grid">
+              <div className="pe-hero-left">
+                <ProgressRing pct={completionRate} />
+                <div className="pe-identity">
+                  <div className="pe-name-row">
+                    <input 
+                      type="text" 
+                      className="pe-inline-input name-bold" 
+                      value={profile.name} 
+                      onChange={e => handleChange('name', e.target.value)}
+                    />
+                  </div>
+                  
+                  {/* Degree Dropdown Field */}
+                  <select 
+                    className="pe-inline-select sub-bold" 
+                    value={profile.degree} 
+                    onChange={e => handleChange('degree', e.target.value)}
+                  >
+                    {['B.Sc', 'B.Tech', 'B.Com', 'BA', 'BCA', 'Other'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
+                  </select>
+
+                  <input 
+                    type="text" 
+                    className="pe-inline-input text-muted row-margin" 
+                    value={profile.college} 
+                    placeholder="Add college / university name"
+                    onChange={e => handleChange('college', e.target.value)}
+                  />
+
+                  <div className="pe-meta">
+                    <span>📍 <input type="text" className="pe-inline-input dynamic-width" value={profile.location} placeholder="Location" onChange={e => handleChange('location', e.target.value)} /></span>
+                    <span>👤 
+                      <select className="pe-inline-select dynamic-width" value={profile.gender} onChange={e => handleChange('gender', e.target.value)}>
+                        {['Male', 'Female', 'Other', 'Prefer not to say'].map(g => <option key={g} value={g}>{g}</option>)}
+                      </select>
+                    </span>
+                    <span>📅 <input type="date" className="pe-inline-input dynamic-width" value={profile.dob} onChange={e => handleChange('dob', e.target.value)} /></span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pe-hero-right">
+                <div className="pe-contact-row">
+                  <span className="pe-contact-icon">📞</span>
+                  <input type="text" className="pe-inline-input phone-field" value={profile.phone} placeholder="Add phone" onChange={e => handleChange('phone', e.target.value)} />
+                  {profile.phone && <span className="pe-verify-badge">Verify</span>}
+                </div>
+                <div className="pe-contact-row">
+                  <span className="pe-contact-icon">✉️</span>
+                  <input type="email" className="pe-inline-input email-field" value={profile.email} placeholder="Add email" onChange={e => handleChange('email', e.target.value)} />
+                  {profile.email && <span className="pe-verified">✅</span>}
+                </div>
+              </div>
             </div>
-            <div className="preferences-subgrid">
-              <div className="pref-cell">
-                <span className="cell-title">PREFERRED JOB TYPE</span>
-                <span className="cell-value">{resumeData.careerPreferences.preferredJobType || 'Not set'}</span>
+
+            {missingTips.length > 0 && (
+              <div className="pe-tips-banner">
+                {missingTips.map((t, i) => (
+                  <span key={i} className="pe-tip-item">{t.label} <strong className="pe-delta">↑ {t.delta}%</strong></span>
+                ))}
               </div>
-              <div className="pref-cell">
-                <span className="cell-title">PREFERRED LOCATION</span>
-                <span className="cell-value">{resumeData.careerPreferences.preferredLocations || 'Not set'}</span>
+            )}
+          </section>
+
+          {/* CAREER PREFERENCES */}
+          <section className="pe-card" id="preference">
+            <div className="pe-card-hd"><h3>Your career preferences</h3></div>
+            <div className="pe-pref-grid">
+              <div className="pe-pref-cell">
+                <span className="pe-pref-lbl">PREFERRED JOB TYPE</span>
+                <select className="pe-inline-select value-bold" value={profile.prefJobType} onChange={e => handleChange('prefJobType', e.target.value)}>
+                  {['Jobs', 'Internships', 'Jobs, Internships'].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
               </div>
-              <div className="pref-cell">
-                <span className="cell-title">AVAILABILITY TO WORK</span>
-                <span className="cell-value highlighted">{resumeData.careerPreferences.availabilityToWork || 'Add work availability'}</span>
+              <div className="pe-pref-cell">
+                <span className="pe-pref-lbl">AVAILABILITY TO WORK</span>
+                <select className="pe-inline-select value-bold green" value={profile.availability} onChange={e => handleChange('availability', e.target.value)}>
+                  {['Immediate joiner', '15 days', '30 days', '60+ days'].map(o => <option key={o} value={o}>{o}</option>)}
+                </select>
+              </div>
+              <div className="pe-pref-cell full">
+                <span className="pe-pref-lbl">PREFERRED LOCATION</span>
+                <input type="text" className="pe-inline-input" value={profile.prefLocation} placeholder="Add locations..." onChange={e => handleChange('prefLocation', e.target.value)} />
               </div>
             </div>
           </section>
 
-          {/* SECTION: Education History */}
-          <section className="dashboard-section-card" id="education">
-            <div className="section-card-header">
+          {/* EDUCATION */}
+          <section className="pe-card" id="education">
+            <div className="pe-card-hd">
               <h3>Education</h3>
-              <button className="action-trigger-btn add" onClick={() => setActiveFormSection('add-education')}>Add</button>
+              <button className="pe-add-btn" onClick={() => addArrayItem('education', { institution: '', type: 'Graduation', stream: 'Science', marks: '', year: '' })}>Add</button>
             </div>
-            <div className="education-list-wrapper">
-              {resumeData.education.map((edu) => (
-                <div key={edu.id} className="education-timeline-node">
-                  <div className="node-content">
-                    <h4>{edu.institution}</h4>
-                    <span className="edit-node-pencil" onClick={() => { setEditingItem(edu); setActiveFormSection('edit-education'); }}>✏️</span>
-                    <p className="qual-text">{edu.qualification}</p>
-                    {edu.stream && <p className="stream-text">{edu.stream}</p>}
-                    {edu.marks && <p className="marks-text">{edu.marks}</p>}
+            {profile.education.map(edu => (
+              <div key={edu.id} className="pe-timeline-row">
+                <div className="pe-tl-dot" />
+                <div className="pe-tl-body">
+                  <div className="pe-item-hd">
+                    <input type="text" className="pe-inline-input bold-item-title" value={edu.institution} placeholder="Institution / University Name" onChange={e => handleNestedArrayChange('education', edu.id, 'institution', e.target.value)} />
+                    <button className="pe-del" onClick={() => removeArrayItem('education', edu.id)}>🗑️</button>
                   </div>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* SECTION: Key Skills */}
-          <section className="dashboard-section-card" id="key-skills">
-            <div className="section-card-header">
-              <h3>Key skills</h3>
-              <button className="action-trigger-btn edit" onClick={() => setActiveFormSection('skills')}>✏️</button>
-            </div>
-            <div className="interactive-chips-row">
-              {resumeData.skills.map((skill, i) => (
-                <div key={i} className="skill-badge-chip">
-                  <span>{skill}</span>
-                  <button className="remove-chip-cross" onClick={() => deleteSkill(skill)}>×</button>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* SECTION: Languages */}
-          <section className="dashboard-section-card" id="languages">
-            <div className="section-card-header">
-              <h3>Languages</h3>
-              <button className="action-trigger-btn add" onClick={() => setActiveFormSection('languages')}>Add</button>
-            </div>
-            <div className="languages-display-grid">
-              {resumeData.languages.map((lang, idx) => (
-                <div key={idx} className="language-item-row">
-                  <div className="lang-meta">
-                    <span className="lang-name">{lang.name}</span>
-                    <span className="edit-lang-btn" onClick={() => setActiveFormSection('languages')}>✏️</span>
+                  <div className="pe-sub-row">
+                    <select className="pe-inline-select dynamic-sub" value={edu.stream} onChange={e => handleNestedArrayChange('education', edu.id, 'stream', e.target.value)}>
+                      {['Science', 'Commerce', 'Arts', 'Engineering', 'Maharashtra Board', 'CBSE'].map(str => <option key={str} value={str}>{str}</option>)}
+                    </select>
+                    <span> · </span>
+                    <input type="text" className="pe-inline-input inline-marks" value={edu.marks} placeholder="Marks / Percentage" onChange={e => handleNestedArrayChange('education', edu.id, 'marks', e.target.value)} />
                   </div>
-                  <span className="lang-capabilities">
-                    {[
-                      lang.read && 'Can read',
-                      lang.write && 'write',
-                      lang.speak && 'speak'
-                    ].filter(Boolean).join(', ')}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* SECTION: Internships */}
-          <section className="dashboard-section-card" id="internships">
-            <div className="section-card-header">
-              <h3>Internships</h3>
-              <button className="action-trigger-btn add" onClick={() => setActiveFormSection('internships')}>Add</button>
-            </div>
-            {resumeData.internships.length === 0 ? (
-              <div className="empty-placeholder-block">
-                <p>Talk about the company you interned at, what projects you undertook and what special skills you learned</p>
-              </div>
-            ) : null}
-          </section>
-
-          {/* SECTION: Projects */}
-          <section className="dashboard-section-card" id="projects">
-            <div className="section-card-header">
-              <h3>Projects</h3>
-              <button className="action-trigger-btn add" onClick={() => setActiveFormSection('projects')}>Add</button>
-            </div>
-            {resumeData.projects.length === 0 ? (
-              <div className="empty-placeholder-block">
-                <p>Talk about your projects that made you proud and contributed to your learnings</p>
-              </div>
-            ) : null}
-          </section>
-
-          {/* SECTION: Profile Summary */}
-          <section className="dashboard-section-card" id="profile-summary">
-            <div className="section-card-header">
-              <h3>Profile summary</h3>
-              <button className="action-trigger-btn edit" onClick={() => setActiveFormSection('summary')}>✏️</button>
-            </div>
-            <p className="editable-summary-paragraph">{resumeData.summary}</p>
-          </section>
-
-          {/* SECTION: Accomplishments */}
-          <section className="dashboard-section-card" id="accomplishments">
-            <div className="section-card-header">
-              <h3>Accomplishments</h3>
-            </div>
-            <div className="sub-accomplishment-row">
-              <div className="sub-acc-header">
-                <div className="label-group">
-                  <h4>Certifications</h4>
-                  <p>Talk about any certified courses that you completed</p>
-                </div>
-                <button className="action-trigger-btn add" onClick={() => setActiveFormSection('accomplishments')}>Add</button>
-              </div>
-            </div>
-            <div className="sub-accomplishment-row">
-              <div className="sub-acc-header">
-                <div className="label-group">
-                  <h4>Awards</h4>
-                  <p>Talk about any special recognitions that you received that makes you proud</p>
-                </div>
-                <button className="action-trigger-btn add" onClick={() => setActiveFormSection('accomplishments')}>Add</button>
-              </div>
-            </div>
-            <div className="sub-accomplishment-row">
-              <div className="sub-acc-header">
-                <div className="label-group">
-                  <h4>Club & committees</h4>
-                  <p>Add details of position of responsibilities that you have held</p>
-                </div>
-                <button className="action-trigger-btn add" onClick={() => setActiveFormSection('accomplishments')}>Add</button>
-              </div>
-            </div>
-          </section>
-
-          {/* SECTION: Competitive Exams */}
-          <section className="dashboard-section-card" id="competitive-exams">
-            <div className="section-card-header">
-              <h3>Competitive exams</h3>
-              <button className="action-trigger-btn add" onClick={() => setActiveFormSection('exams')}>Add</button>
-            </div>
-            <div className="empty-placeholder-block">
-              <p>Talk about any competitive exam that you appeared for and the rank received</p>
-            </div>
-          </section>
-
-          {/* SECTION: Employment */}
-          <section className="dashboard-section-card" id="employment">
-            <div className="section-card-header">
-              <h3>Employment</h3>
-              <button className="action-trigger-btn add" onClick={() => setActiveFormSection('employment')}>Add</button>
-            </div>
-            {resumeData.employment.map((emp) => (
-              <div key={emp.id} className="employment-row-card">
-                <div className="emp-icon-avatar">🏢</div>
-                <div className="emp-main-details">
-                  <div className="emp-headline-row">
-                    <h4>{emp.company}</h4>
-                    <span className="edit-node-pencil" onClick={() => setActiveFormSection('employment')}>✏️</span>
-                  </div>
-                  <span className="duration-pill">{emp.duration}</span>
-                  <p className="experience-alert-warning">⚠️ My total work experience is 2 years 2 months</p>
+                  <input type="text" className="pe-inline-input text-meta-small" value={edu.year} placeholder="Year (e.g., Passed out in 2024)" onChange={e => handleNestedArrayChange('education', edu.id, 'year', e.target.value)} />
                 </div>
               </div>
             ))}
           </section>
 
-          {/* SECTION: Academic Achievements */}
-          <section className="dashboard-section-card" id="academic-achievements">
-            <div className="section-card-header">
-              <h3>Academic achievements</h3>
+          {/* KEY SKILLS */}
+          <section className="pe-card" id="key-skills">
+            <div className="pe-card-hd"><h3>Key skills</h3></div>
+            <div className="pe-chips">
+              {profile.skills.map((s, i) => (
+                <span key={i} className="pe-chip grey">
+                  {s} <button onClick={() => handleChange('skills', profile.skills.filter((_, j) => j !== i))}>×</button>
+                </span>
+              ))}
+              <input 
+                type="text" 
+                className="pe-inline-input add-skill-placeholder" 
+                placeholder="+ Type skill & hit Enter" 
+                value={newSkill}
+                onChange={e => setNewSkill(e.target.value)}
+                onKeyDown={handleAddSkill}
+              />
             </div>
-            <div className="academic-achievements-list">
-              {resumeData.academicAchievements.map((ach) => (
-                <div key={ach.id} className="achievement-row-node">
-                  <div className="ach-header-row">
-                    <h5>{ach.phase}</h5>
-                    <span className="edit-node-pencil" onClick={() => setActiveFormSection('academic')}>✏️</span>
+          </section>
+
+          {/* LANGUAGES */}
+          <section className="pe-card" id="languages">
+            <div className="pe-card-hd">
+              <h3>Languages</h3>
+              <button className="pe-add-btn" onClick={() => addArrayItem('languages', { name: '', capability: 'Can read and write' })}>Add</button>
+            </div>
+            <div className="pe-lang-grid">
+              {profile.languages.map(l => (
+                <div key={l.id} className="pe-lang-item">
+                  <div className="pe-lang-top">
+                    <input type="text" className="pe-inline-input bold-item-title" value={l.name} placeholder="Language" onChange={e => handleNestedArrayChange('languages', l.id, 'name', e.target.value)} />
+                    <button className="pe-del" onClick={() => removeArrayItem('languages', l.id)}>🗑️</button>
                   </div>
-                  <p className="ach-body-desc">{ach.details}</p>
+                  <select className="pe-inline-select capability-dropdown" value={l.capability} onChange={e => handleNestedArrayChange('languages', l.id, 'capability', e.target.value)}>
+                    {['Can read', 'Can read and write', 'Can speak, read and write'].map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
                 </div>
               ))}
             </div>
           </section>
 
-          {/* SECTION: Resume Upload Box */}
-          <section className="dashboard-section-card" id="resume">
-            <div className="section-card-header">
-              <h3>Resume</h3>
-            </div>
-            <p className="resume-tip-caption">Your resume is the first impression you make on potential employers. Craft it carefully to secure your desired job or internship.</p>
-            
-            {resumeData.resumeFile ? (
-              <div className="uploaded-resume-vault-card">
-                <div className="file-icon-badge">📄</div>
-                <div className="file-metadata-info">
-                  <span className="filename-label">{resumeData.resumeFile.name}</span>
-                  <span className="upload-timestamp">Uploaded on {resumeData.resumeFile.uploadedAt}</span>
-                </div>
-                <div className="vault-actions">
-                  <button className="vault-download-btn" title="Download">📥</button>
-                  <button className="vault-delete-btn" title="Delete" onClick={() => setResumeData(p => ({...p, resumeFile: null}))}>🗑️</button>
-                </div>
-              </div>
-            ) : null}
-
-            <div className="dashed-drag-drop-zone">
-              <button className="trigger-upload-system-btn">Update resume</button>
-              <span className="file-constraints-label">Supported formats: doc, docx, rtf, pdf, up to 2MB</span>
-            </div>
+          {/* PROFILE SUMMARY */}
+          <section className="pe-card" id="profile-summary">
+            <div className="pe-card-hd"><h3>Profile summary</h3></div>
+            <textarea 
+              className="pe-inline-textarea" 
+              value={profile.summary} 
+              placeholder="Write an impactful overview of your skills..."
+              onChange={e => handleChange('summary', e.target.value)}
+            />
           </section>
 
+          {/* EMPLOYMENT */}
+          <section className="pe-card" id="employment">
+            <div className="pe-card-hd">
+              <h3>Employment</h3>
+              <button className="pe-add-btn" onClick={() => addArrayItem('employment', { company: '', duration: '', totalExp: '' })}>Add</button>
+            </div>
+            {profile.employment.map(emp => (
+              <div key={emp.id} className="pe-emp-row">
+                <div className="pe-emp-avatar">🏢</div>
+                <div className="pe-emp-details">
+                  <div className="pe-item-hd">
+                    <input type="text" className="pe-inline-input bold-item-title" value={emp.company} placeholder="Company Name" onChange={e => handleNestedArrayChange('employment', emp.id, 'company', e.target.value)} />
+                    <button className="pe-del" onClick={() => removeArrayItem('employment', emp.id)}>🗑️</button>
+                  </div>
+                  <input type="text" className="pe-inline-input duration-input" value={emp.duration} placeholder="Duration (e.g. Aug'23 to Aug'24)" onChange={e => handleNestedArrayChange('employment', emp.id, 'duration', e.target.value)} />
+                  <p className="pe-warning-text">🚨 Total experience: <input type="text" className="pe-inline-input compact" value={emp.totalExp} placeholder="2 years" onChange={e => handleNestedArrayChange('employment', emp.id, 'totalExp', e.target.value)} /></p>
+                </div>
+              </div>
+            ))}
+          </section>
+
+          {/* ACADEMIC ACHIEVEMENTS */}
+          <section className="pe-card" id="academic-achievements">
+            <div className="pe-card-hd">
+              <h3>Academic achievements</h3>
+              <button className="pe-add-btn" onClick={() => addArrayItem('academicAchievements', { title: '', desc: '' })}>Add</button>
+            </div>
+            {profile.academicAchievements.map(ach => (
+              <div key={ach.id} className="pe-ach-row">
+                <div className="pe-item-hd">
+                  <input type="text" className="pe-inline-input bold-item-title" value={ach.title} placeholder="Title (e.g., During B.Sc)" onChange={e => handleNestedArrayChange('academicAchievements', ach.id, 'title', e.target.value)} />
+                  <button className="pe-del" onClick={() => removeArrayItem('academicAchievements', ach.id)}>🗑️</button>
+                </div>
+                <input type="text" className="pe-inline-input full-desc" value={ach.desc} placeholder="Description of achievements..." onChange={e => handleNestedArrayChange('academicAchievements', ach.id, 'desc', e.target.value)} />
+              </div>
+            ))}
+          </section>
+
+          {/* RESUME MANAGEMENT */}
+          <section className="pe-card" id="resume">
+            <div className="pe-card-hd"><h3>Resume</h3></div>
+            <p className="pe-resume-caption">Your resume is the first impression you make on potential employers.</p>
+            {profile.resume && (
+              <div className="pe-resume-box">
+                <div>
+                  <div className="pe-filename">{profile.resume.fileName}</div>
+                  <div className="pe-date">Uploaded on {profile.resume.uploadedDate}</div>
+                </div>
+                <button className="pe-del-btn" onClick={() => handleChange('resume', null)}>🗑️</button>
+              </div>
+            )}
+            <div className="pe-upload-zone" onClick={() => fileRef.current?.click()}>
+              <button className="pe-upload-trigger">Update resume</button>
+              <div className="pe-constraints">Supported formats: doc, docx, rtf, pdf up to 2MB</div>
+              <input type="file" ref={fileRef} style={{ display: 'none' }} accept=".doc,.docx,.rtf,.pdf" onChange={handleResumeChange} />
+            </div>
+          </section>
         </main>
-
-        {/* Floating Quick Links Sidebar Nav Component */}
-        <aside className="dashboard-sidebar-navigation">
-          <div className="sidebar-sticky-panel">
-            <h4 className="sidebar-title">Quick links</h4>
-            <nav className="vertical-anchor-nav">
-              <a href="#preference" className="anchor-link">Preference</a>
-              <a href="#education" className="anchor-link">Education</a>
-              <a href="#key-skills" className="anchor-link">Key skills</a>
-              <a href="#languages" className="anchor-link">Languages</a>
-              <a href="#internships" className="anchor-link">Internships</a>
-              <a href="#projects" className="anchor-link">Projects</a>
-              <a href="#profile-summary" className="anchor-link">Profile summary</a>
-              <a href="#accomplishments" className="anchor-link">Accomplishments</a>
-              <a href="#competitive-exams" className="anchor-link">Competitive exams</a>
-              <a href="#employment" className="anchor-link">Employment</a>
-              <a href="#academic-achievements" className="anchor-link">Academic achievements</a>
-              <a href="#resume" className="anchor-link">Resume</a>
-            </nav>
-          </div>
-        </aside>
-
       </div>
 
-      {/* Global Form Controller Actions Footer Panel */}
-      <div className="floating-sticky-save-bar">
-        <p>Changes will apply live to application records.</p>
-        <button className="app-main-save-btn" onClick={saveProfile} disabled={saving}>
-          {saving ? 'Processing updates...' : 'Save Profile Changes'}
+      {/* FOOTER SAVE BAR */}
+      <footer className="pe-footer-bar">
+        <span>Updates apply instantly to local views. Sync with backend permanently before leaving.</span>
+        <button className="pe-main-save-btn" onClick={handleSave} disabled={saving}>
+          {saving ? "Syncing..." : "Save Changes"}
         </button>
-      </div>
+      </footer>
     </div>
   );
 }

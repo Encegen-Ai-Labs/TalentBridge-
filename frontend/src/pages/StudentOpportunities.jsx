@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { getAllJobs, getCompanyInternships, getPreferences, updatePreferences, saveJob as apiSaveJob, hideJob as apiHideJob, getSavedJobs as apiGetSavedJobs, getHiddenJobs as apiGetHiddenJobs } from '../services/api';
+import { getAllJobs, getCompanyInternships, getPreferences, updatePreferences, saveJob as apiSaveJob, hideJob as apiHideJob, getSavedJobs as apiGetSavedJobs, getHiddenJobs as apiGetHiddenJobs, removeSavedJob as apiRemoveSavedJob } from '../services/api';
 import { toast } from 'react-toastify';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './StudentOpportunities.css';
-
+import PlacementStories from '../components/Placementstories';
+import SimilarJobs from '../components/SimilarJobs';
 export default function StudentOpportunities() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -35,6 +36,8 @@ export default function StudentOpportunities() {
   }, [location.pathname]);
 
   useEffect(() => {
+    const normalizeIds = (ids) => Array.isArray(ids) ? ids.map(String) : [];
+
     const loadPreferences = async () => {
       try {
         const prefs = await getPreferences();
@@ -49,19 +52,21 @@ export default function StudentOpportunities() {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          const serverSaved = await apiGetSavedJobs();
-          const serverHidden = await apiGetHiddenJobs();
-          setSavedJobs(serverSaved || []);
-          setHiddenJobs(serverHidden || []);
+          const serverSaved = normalizeIds(await apiGetSavedJobs());
+          const serverHidden = normalizeIds(await apiGetHiddenJobs());
+          setSavedJobs(serverSaved);
+          setHiddenJobs(serverHidden);
+          localStorage.setItem('savedJobs', JSON.stringify(serverSaved));
+          localStorage.setItem('hiddenJobs', JSON.stringify(serverHidden));
         } catch (err) {
-          const saved = JSON.parse(localStorage.getItem('savedJobs') || '[]');
-          const hidden = JSON.parse(localStorage.getItem('hiddenJobs') || '[]');
+          const saved = normalizeIds(JSON.parse(localStorage.getItem('savedJobs') || '[]'));
+          const hidden = normalizeIds(JSON.parse(localStorage.getItem('hiddenJobs') || '[]'));
           setSavedJobs(saved);
           setHiddenJobs(hidden);
         }
       } else {
-        const saved = JSON.parse(localStorage.getItem('savedJobs') || '[]');
-        const hidden = JSON.parse(localStorage.getItem('hiddenJobs') || '[]');
+        const saved = normalizeIds(JSON.parse(localStorage.getItem('savedJobs') || '[]'));
+        const hidden = normalizeIds(JSON.parse(localStorage.getItem('hiddenJobs') || '[]'));
         setSavedJobs(saved);
         setHiddenJobs(hidden);
       }
@@ -102,6 +107,20 @@ export default function StudentOpportunities() {
     return { salaryMin, salaryMax, duration, category, skills };
   };
 
+  const formatPostedDate = (dateValue) => {
+    if (!dateValue) return 'Recently posted';
+    const posted = new Date(dateValue);
+    if (Number.isNaN(posted.getTime())) return 'Recently posted';
+
+    const now = new Date();
+    const diffMs = now - posted;
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Today';
+    if (diffDays === 1) return '1 day ago';
+    return `${diffDays} days ago`;
+  };
+
   const jobIdOf = (job) => job.job_id || job.id || job._id;
 
   const matchesPreferences = (job) => {
@@ -132,50 +151,67 @@ export default function StudentOpportunities() {
 
   const filteredJobs = useMemo(() => jobs.filter(matchesPreferences), [jobs, selectedRoles, selectedLocations, hiddenJobs]);
 
+  const displayJobs = activeTab === 'Profile' ? jobs : filteredJobs;
+
+  const normalizeIds = (ids) => Array.isArray(ids) ? ids.map(String) : [];
+
   const persistSaved = (arr) => {
-    setSavedJobs(arr);
-    localStorage.setItem('savedJobs', JSON.stringify(arr));
+    const normalized = normalizeIds(arr);
+    setSavedJobs(normalized);
+    localStorage.setItem('savedJobs', JSON.stringify(normalized));
   };
 
   const persistHidden = (arr) => {
-    setHiddenJobs(arr);
-    localStorage.setItem('hiddenJobs', JSON.stringify(arr));
+    const normalized = normalizeIds(arr);
+    setHiddenJobs(normalized);
+    localStorage.setItem('hiddenJobs', JSON.stringify(normalized));
   };
 
-  const toggleSaveJob = (job) => {
+  const toggleSaveJob = async (job) => {
     const id = String(jobIdOf(job));
     const exists = savedJobs.includes(id);
     const token = localStorage.getItem('token');
+
     if (token) {
+      try {
+        if (exists) {
+          const saved = await apiRemoveSavedJob(id);
+          persistSaved(saved || savedJobs.filter(i => i !== id));
+          toast.success('Removed from saved');
+        } else {
+          const saved = await apiSaveJob(id);
+          persistSaved(saved || [id, ...savedJobs]);
+          toast.success('Saved job');
+        }
+      } catch (error) {
+        console.error('Save job error:', error);
+        toast.error(exists ? 'Failed to remove saved job' : 'Failed to save');
+      }
+    } else {
       if (exists) {
-        // removing on server isn't implemented separately; toggle locally
         persistSaved(savedJobs.filter(i => i !== id));
         toast.success('Removed from saved');
       } else {
-        apiSaveJob(id).then((saved) => {
-          persistSaved(saved || [id, ...savedJobs]);
-        }).catch(() => {
-          toast.error('Failed to save');
-        });
+        persistSaved([id, ...savedJobs]);
+        toast.success('Saved job');
       }
-    } else {
-      if (exists) persistSaved(savedJobs.filter(i => i !== id));
-      else persistSaved([id, ...savedJobs]);
-      toast.success(exists ? 'Removed from saved' : 'Saved job');
     }
   };
 
-  const hideJob = (job) => {
+  const hideJob = async (job) => {
     const id = String(jobIdOf(job));
     const token = localStorage.getItem('token');
     if (token) {
-      apiHideJob(id).then((hidden) => {
+      try {
+        const hidden = await apiHideJob(id);
         persistHidden(hidden || [id, ...hiddenJobs]);
+        persistSaved(savedJobs.filter(i => i !== id));
         setJobs(prev => prev.filter(j => String(jobIdOf(j)) !== id));
         toast.info('Job hidden');
-      }).catch(() => {
+      } catch (error) {
+        console.error('Hide job error:', error);
         toast.error('Failed to hide job');
-      });
+      }
     } else {
       if (!hiddenJobs.includes(id)) persistHidden([id, ...hiddenJobs]);
       setJobs(prev => prev.filter(j => String(jobIdOf(j)) !== id));
@@ -217,30 +253,11 @@ export default function StudentOpportunities() {
   }
 
   return (
-   
-    <div 
-      className="opportunities-page" 
-      style={{ 
-        width: '100vw', 
-        marginLeft: 'calc(-50vw + 50%)', 
-        marginRight: 'calc(-50vw + 50%)',
-        position: 'relative',
-        left: 0,
-        right: 0
-      }}
-    >
-      
-      <div 
-        className="opportunities-container" 
-        style={{ 
-          width: '100%', 
-          maxWidth: '94%', 
-          margin: '0 auto',
-          padding: '0 16px',
-          backgroundColor: '#D4F1FF'
-        }}
-      >
-        
+    <>
+      <section className="student-opportunities-outer">
+        <div className="student-opportunities-page">
+          <div className="student-opportunities-container">
+
         {/* TOP BANNER METRICS CONTROL */}
         <div className="header-meta-section">
           <div className="title-block">
@@ -256,19 +273,22 @@ export default function StudentOpportunities() {
         {/* TABS INTERNAL SUB-ROUTER */}
         <div className="tabs-row-container">
           <div className="tabs-row">
-            {[`Profile (${jobs.length})`, 'You might like (16)', `Preferences (${selectedRoles.length + selectedLocations.length})`].map((tab) => {
-              const tabName = tab.split(' ')[0];
-              return (
-                <button 
-                  key={tab} 
-                  className={`tab-btn ${activeTab === tabName ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tabName)}
-                >
-                  {tab}
-                </button>
-              );
-            })}
-            <button className="tab-btn" onClick={() => navigate('/saved-jobs')}>Saved Jobs</button>
+            {[
+              { label: 'Profile', count: jobs.length },
+              { label: 'You might like', count: filteredJobs.length },
+              { label: 'Preferences', count: selectedRoles.length + selectedLocations.length },
+            ].map(({ label, count }) => (
+              <button
+                key={label}
+                className={`tab-btn ${activeTab === label ? 'active' : ''}`}
+                onClick={() => setActiveTab(label)}
+              >
+                {`${label} (${count})`}
+              </button>
+            ))}
+            <button className="tab-btn" onClick={() => navigate('/saved-jobs')}>
+              {`Saved Jobs (${savedJobs.length})`}
+            </button>
           </div>
         </div>
 
@@ -277,24 +297,24 @@ export default function StudentOpportunities() {
         </div>
 
         {/* ३. GRID SYSTEM: डाव्या बाजूला विस्तीर्ण (3.2fr) आणि उजव्या बाजूला योग्य आकाराचा साइडबार (1fr) */}
-        <div 
-          className="opportunities-grid" 
-          style={{ 
-            display: 'grid', 
-            gridTemplateColumns: window.innerWidth > 1024 ? '3.2fr 1fr' : '1fr', 
-            gap: '32px', 
+        <div
+          className="opportunities-grid"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: window.innerWidth > 1024 ? '3.2fr 1fr' : '1fr',
+            gap: '32px',
             width: '100%',
             alignItems: 'start'
           }}
         >
-          
+
           {/* MAIN CONTENT LISTINGS */}
           <main className="opportunities-main" style={{ width: '100%' }}>
             <div className="jobs-list">
-              {filteredJobs.length === 0 ? (
+              {displayJobs.length === 0 ? (
                 <div className="empty-state">No opportunities found</div>
               ) : (
-                filteredJobs.map((job, index) => {
+                displayJobs.map((job, index) => {
                   const info = parseJobInfo(job);
                   const firstLetter = job.company_name?.charAt(0) || 'C';
                   const id = String(jobIdOf(job));
@@ -321,7 +341,7 @@ export default function StudentOpportunities() {
                           <div className="selection-column">
                             <input type="checkbox" className="job-select-checkbox" />
                           </div>
-                          
+
                           <div className="content-column">
                             <div className="card-top-header">
                               <div className="meta-titles">
@@ -336,7 +356,7 @@ export default function StudentOpportunities() {
                             <div className="job-parameters-row">
                               <span className="param-item"><span className="icon">💼</span> 0-3 Yrs</span>
                               <span className="param-item">
-                                <span className="icon">₹</span> 
+                                <span className="icon">₹</span>
                                 {info.salaryMin ? `${info.salaryMin} - ${info.salaryMax} Lacs PA` : "Not disclosed"}
                               </span>
                               <span className="param-item"><span className="icon">📍</span> {job.location || "Bengaluru"}</span>
@@ -355,10 +375,10 @@ export default function StudentOpportunities() {
                             </div>
 
                             <div className="card-action-footer">
-                              <span className="time-stamp-text">3 Days Ago</span>
+                              <span className="time-stamp-text">{formatPostedDate(job.created_at || job.posted_at || job.date)}</span>
                               <div className="footer-right-buttons">
-                                <button className="action-inline-btn text-muted" onClick={() => hideJob(job)}>👁️‍🗨️ Hide</button>
-                                <button className="action-inline-btn text-muted" onClick={() => toggleSaveJob(job)}>{savedJobs.includes(id) ? '🔖 Saved' : '🔖 Save'}</button>
+                                <button type="button" className="action-inline-btn text-muted" onClick={() => hideJob(job)}>👁️‍🗨️ Hide</button>
+                                <button type="button" className="action-inline-btn text-muted" onClick={() => toggleSaveJob(job)}>{savedJobs.includes(id) ? '🔖 Saved' : '🔖 Save'}</button>
                               </div>
                             </div>
                           </div>
@@ -449,5 +469,9 @@ export default function StudentOpportunities() {
         </div>
       </div>
     </div>
+  </section>
+<PlacementStories />
+<SimilarJobs jobs={filteredJobs} excludeId={null} limit={3} />
+</>
   );
 }

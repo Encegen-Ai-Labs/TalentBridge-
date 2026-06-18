@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, useParams, useNavigate } from 'react-router-dom';
 import { getJobById, applyJob } from '../services/api';
 import { toast } from 'react-toastify';
+import PlacementStories from '../components/Placementstories';
 import './OpportunityDetails.css';
-
+import SimilarJobs from '../components/SimilarJobs';
 export default function OpportunityDetails() {
   const { state } = useLocation();
   const { id } = useParams(); // job id from URL
@@ -112,7 +113,8 @@ export default function OpportunityDetails() {
   const duration = parsedDesc.duration || job.duration || '';
 
   return (
-    <div className="opportunities-page">
+    <>
+      <div className="opportunities-page">
       <div className="opportunities-container">
         <button className="back-btn" onClick={() => navigate(-1)} style={{ marginBottom: '1rem' }}>
           ← Back
@@ -212,5 +214,8 @@ export default function OpportunityDetails() {
         </div>
       </div>
     </div>
+    <PlacementStories />
+    <SimilarJobs />
+  </>
   );
 }
