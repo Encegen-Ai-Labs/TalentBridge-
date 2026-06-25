@@ -1,3 +1,7 @@
+/* ============================================
+   PROFILE EDITOR - COMPLETE STYLES
+   ============================================ */
+
 /* Base Container Framework */
 .pe-wrap {
   max-width: 1140px;
@@ -5,6 +9,8 @@
   padding: 2rem 1rem 6rem 1rem;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   color: #1e293b;
+  background: #f8fafc;
+  min-height: 100vh;
 }
 
 .pe-body {
@@ -15,12 +21,16 @@
 }
 
 @media (max-width: 768px) {
-  .pe-body { grid-template-columns: 1fr; }
-  .pe-sidebar { display: none; }
+  .pe-body { 
+    grid-template-columns: 1fr; 
+  }
+  .pe-sidebar { 
+    display: none; 
+  }
 }
 
 /* ==========================================================================
-   CRITICAL ELEMENT: BORDER-FREE TEXT/SELECT SYSTEM FOR EXPLICIT NATURAL UI
+   CRITICAL ELEMENT: BORDER-FREE TEXT/SELECT SYSTEM
    ========================================================================== */
 .pe-inline-input,
 .pe-inline-select {
@@ -45,6 +55,7 @@
 .pe-inline-input:hover,
 .pe-inline-select:hover {
   background: rgba(37, 99, 235, 0.04) !important;
+  border-radius: 4px !important;
 }
 
 .pe-inline-input:focus,
@@ -54,7 +65,7 @@
   background: transparent !important;
 }
 
-/* Custom Multiline Text Block matching regular paragraphs */
+/* Custom Multiline Text Block */
 .pe-inline-textarea {
   width: 100%;
   min-height: 90px;
@@ -73,29 +84,108 @@
   color: #1e293b;
 }
 
-/* Dedicated Typography Resets to mimic original screenshot layout */
-.name-bold { font-size: 1.35rem; font-weight: 700; width: 280px; }
-.sub-bold { font-weight: 600; font-size: 0.95rem; width: 100%; display: block; margin-top: 0.2rem; }
-.value-bold { font-weight: 600; font-size: 0.88rem; width: 100%; color: #1e293b; }
-.value-bold.green { color: #16a34a !important; }
-.bold-item-title { font-weight: 600; font-size: 0.95rem; width: 85%; color: #1e293b; }
-.row-margin { display: block; width: 100%; margin: 0.15rem 0 0.5rem 0; font-size: 0.9rem; }
-.dynamic-width { width: auto; max-width: 120px; text-align: left; }
-.phone-field, .email-field { width: 160px; font-size: 0.88rem; }
-.inline-marks { width: 110px; font-size: 0.85rem; color: #64748b; }
-.dynamic-sub { width: auto; font-size: 0.85rem; color: #64748b; font-weight: 500; }
-.text-meta-small { font-size: 0.8rem; color: #94a3b8; display: block; width: 100%; margin-top: 0.2rem; }
-.duration-input { font-size: 0.82rem; color: #64748b; display: block; width: 100%; }
-.full-desc { font-size: 0.85rem; color: #64748b; width: 100%; display: block; margin-top: 0.15rem; }
-.add-skill-placeholder { font-size: 0.8rem; color: #94a3b8; width: 140px; font-weight: 500; cursor: pointer; }
+/* ==========================================================================
+   TYPOGRAPHY RESETS
+   ========================================================================== */
+.name-bold { 
+  font-size: 1.35rem; 
+  font-weight: 700; 
+  width: 200px; 
+}
+.pe-degree-tag {
+  font-size: 0.8rem;
+  color: #64748b;
+  font-weight: 500;
+  background: #f1f5f9;
+  padding: 0.1rem 0.6rem;
+  border-radius: 12px;
+}
+.sub-bold { 
+  font-weight: 600; 
+  font-size: 0.95rem; 
+  width: 100%; 
+  display: block; 
+  margin-top: 0.2rem; 
+}
+.value-bold { 
+  font-weight: 600; 
+  font-size: 0.88rem; 
+  width: 100%; 
+  color: #1e293b; 
+}
+.value-bold.green { 
+  color: #16a34a !important; 
+}
+.bold-item-title { 
+  font-weight: 600; 
+  font-size: 0.95rem; 
+  width: 85%; 
+  color: #1e293b; 
+}
+.row-margin { 
+  display: block; 
+  width: 100%; 
+  margin: 0.15rem 0 0.5rem 0; 
+  font-size: 0.9rem; 
+}
+.dynamic-width { 
+  width: auto; 
+  max-width: 120px; 
+  text-align: left; 
+}
+.phone-field, .email-field { 
+  width: 160px; 
+  font-size: 0.88rem; 
+}
+.inline-marks { 
+  width: 110px; 
+  font-size: 0.85rem; 
+  color: #64748b; 
+}
+.dynamic-sub { 
+  width: auto; 
+  font-size: 0.85rem; 
+  color: #64748b; 
+  font-weight: 500; 
+}
+.text-meta-small { 
+  font-size: 0.8rem; 
+  color: #94a3b8; 
+  display: block; 
+  width: 100%; 
+  margin-top: 0.2rem; 
+}
+.duration-input { 
+  font-size: 0.82rem; 
+  color: #64748b; 
+  display: block; 
+  width: 100%; 
+}
+.full-desc { 
+  font-size: 0.85rem; 
+  color: #64748b; 
+  width: 100%; 
+  display: block; 
+  margin-top: 0.15rem; 
+}
+.add-skill-placeholder { 
+  font-size: 0.8rem; 
+  color: #94a3b8; 
+  width: 140px; 
+  font-weight: 500; 
+  cursor: pointer; 
+}
 
-/* Main Cards layout templates */
+/* ==========================================================================
+   MAIN CARDS
+   ========================================================================== */
 .pe-card {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
-  padding: 1.25rem;
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
   margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .pe-card-hd {
@@ -103,12 +193,15 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 0.75rem;
 }
 
 .pe-card-hd h3 {
   margin: 0;
   font-size: 1.05rem;
   font-weight: 700;
+  color: #0f172a;
 }
 
 .pe-add-btn {
@@ -118,13 +211,22 @@
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.pe-add-btn:hover {
+  background: #f0fdf4;
 }
 
-/* Tabs & Navigation */
+/* ==========================================================================
+   TABS & NAVIGATION
+   ========================================================================== */
 .pe-tabs {
   display: flex;
   gap: 1.5rem;
   border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
 }
 
 .pe-tab {
@@ -135,6 +237,7 @@
   font-weight: 500;
   color: #64748b;
   cursor: pointer;
+  transition: all 0.2s;
 }
 
 .pe-tab.active {
@@ -143,13 +246,20 @@
   border-bottom: 2px solid #1e293b;
 }
 
-/* Hero Area Layout */
+.pe-tab:hover {
+  color: #1e293b;
+}
+
+/* ==========================================================================
+   HERO AREA
+   ========================================================================== */
 .pe-hero {
   background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 8px;
+  border-radius: 12px;
   padding: 1.5rem;
   margin-bottom: 1.25rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
 }
 
 .pe-hero-grid {
@@ -159,12 +269,25 @@
 }
 
 @media (max-width: 640px) {
-  .pe-hero-grid { grid-template-columns: 1fr; }
+  .pe-hero-grid { 
+    grid-template-columns: 1fr; 
+  }
 }
 
 .pe-hero-left {
   display: flex;
   gap: 1rem;
+}
+
+.pe-identity {
+  flex: 1;
+}
+
+.pe-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
 }
 
 .pe-meta {
@@ -176,22 +299,56 @@
   flex-wrap: wrap;
 }
 
+.pe-stats-row {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.pe-stat-item {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.pe-stat-label {
+  font-weight: 400;
+  color: #94a3b8;
+  font-size: 0.8rem;
+}
+
 .pe-contact-row {
   display: flex;
   align-items: center;
   gap: 0.4rem;
   font-size: 0.88rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  background: #f8fafc;
+  padding: 0.4rem 0.75rem;
+  border-radius: 8px;
+}
+
+.pe-contact-icon {
+  color: #94a3b8;
 }
 
 .pe-verify-badge {
   color: #16a34a;
   font-weight: 600;
-  font-size: 0.8rem;
-  margin-left: 0.5rem;
+  font-size: 0.7rem;
+  background: #dcfce7;
+  padding: 0.1rem 0.5rem;
+  border-radius: 12px;
+  margin-left: 0.25rem;
 }
 
-/* Progress Ring Design component */
+.pe-verified {
+  font-size: 0.9rem;
+}
+
+/* ==========================================================================
+   PROGRESS RING
+   ========================================================================== */
 .pe-ring {
   position: relative;
   width: 84px;
@@ -208,34 +365,62 @@
   justify-content: center;
 }
 
-.pe-ring-pct { font-size: 1.15rem; font-weight: 700; }
-.pe-ring-sub { font-size: 0.55rem; text-transform: uppercase; color: #64748b; font-weight: 600; }
+.pe-ring-pct { 
+  font-size: 1.15rem; 
+  font-weight: 700; 
+}
+.pe-ring-sub { 
+  font-size: 0.55rem; 
+  text-transform: uppercase; 
+  color: #64748b; 
+  font-weight: 600; 
+}
 
-/* Preference Grids layout options */
+/* ==========================================================================
+   PREFERENCE GRID
+   ========================================================================== */
 .pe-pref-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.pe-pref-cell { display: flex; flex-direction: column; }
-.pe-pref-cell.full { grid-column: 1 / -1; }
-.pe-pref-lbl { font-size: 0.68rem; color: #64748b; font-weight: 700; margin-bottom: 0.15rem; }
+.pe-pref-cell { 
+  display: flex; 
+  flex-direction: column; 
+}
+.pe-pref-cell.full { 
+  grid-column: 1 / -1; 
+}
+.pe-pref-lbl { 
+  font-size: 0.68rem; 
+  color: #64748b; 
+  font-weight: 700; 
+  margin-bottom: 0.15rem; 
+  letter-spacing: 0.3px;
+}
 
-/* Timeline Node Component elements */
+/* ==========================================================================
+   TIMELINE ROW
+   ========================================================================== */
 .pe-timeline-row {
   display: flex;
   gap: 0.85rem;
   margin-bottom: 1rem;
+  padding-left: 0.5rem;
 }
 
 .pe-tl-dot {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
   background: #cbd5e1;
   border-radius: 50%;
   margin-top: 0.45rem;
   flex-shrink: 0;
+}
+
+.pe-tl-body {
+  flex: 1;
 }
 
 .pe-item-hd {
@@ -249,11 +434,25 @@
   background: none;
   border: none;
   cursor: pointer;
-  opacity: 0.4;
+  opacity: 0.3;
+  font-size: 0.9rem;
+  transition: opacity 0.2s;
 }
-.pe-del:hover { opacity: 1; }
+.pe-del:hover { 
+  opacity: 1; 
+}
 
-/* Chips Collection wrapper */
+.pe-sub-row {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+  margin-top: 0.15rem;
+}
+
+/* ==========================================================================
+   CHIPS
+   ========================================================================== */
 .pe-chips {
   display: flex;
   flex-wrap: wrap;
@@ -265,22 +464,34 @@
   background: #f1f5f9;
   color: #475569;
   font-size: 0.8rem;
-  padding: 0.2rem 0.6rem;
-  border-radius: 12px;
+  padding: 0.25rem 0.6rem;
+  border-radius: 16px;
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
+  border: 1px solid #e2e8f0;
+}
+
+.pe-chip.grey:hover {
+  background: #e2e8f0;
 }
 
 .pe-chip button {
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 0 0.15rem;
   font-size: 0.9rem;
+  color: #94a3b8;
+  transition: color 0.2s;
+}
+.pe-chip button:hover {
+  color: #ef4444;
 }
 
-/* Languages Grid area */
+/* ==========================================================================
+   LANGUAGES GRID
+   ========================================================================== */
 .pe-lang-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -290,6 +501,16 @@
 .pe-lang-item {
   display: flex;
   flex-direction: column;
+  background: #f8fafc;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+}
+
+.pe-lang-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .capability-dropdown {
@@ -299,46 +520,101 @@
   width: 100%;
 }
 
-/* Employment section cards structure */
+/* ==========================================================================
+   EMPLOYMENT
+   ========================================================================== */
 .pe-emp-row {
   display: flex;
   gap: 0.75rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 0.75rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
 }
 
 .pe-emp-avatar {
   width: 36px;
   height: 36px;
-  background: #f8fafc;
+  background: #ffffff;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 8px;
   display: grid;
   place-items: center;
+  font-size: 1.1rem;
 }
 
-.pe-emp-details { flex: 1; }
-.pe-warning-text { font-size: 0.8rem; color: #ef4444; margin: 0.25rem 0 0 0; }
-.pe-warning-text .compact { font-weight: bold; width: 100px; color: #ef4444; }
+.pe-emp-details { 
+  flex: 1; 
+}
+.pe-warning-text { 
+  font-size: 0.8rem; 
+  color: #ef4444; 
+  margin: 0.25rem 0 0 0; 
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+.pe-warning-text .compact { 
+  font-weight: bold; 
+  width: 100px; 
+  color: #ef4444; 
+}
 
-/* Resume Asset Container components */
+/* ==========================================================================
+   RESUME
+   ========================================================================== */
+.pe-resume-caption {
+  font-size: 0.85rem;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
 .pe-resume-box {
   display: flex;
   justify-content: space-between;
   align-items: center;
   background: #f8fafc;
   border: 1px solid #e2e8f0;
-  border-radius: 6px;
+  border-radius: 8px;
   padding: 0.5rem 0.75rem;
   margin-bottom: 0.75rem;
 }
 
-.pe-filename { font-size: 0.85rem; font-weight: 600; }
-.pe-date { font-size: 0.75rem; color: #64748b; }
+.pe-filename { 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+}
+.pe-date { 
+  font-size: 0.75rem; 
+  color: #64748b; 
+}
+
+.pe-del-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+.pe-del-btn:hover {
+  opacity: 1;
+}
+
 .pe-upload-zone {
-  border: 1px dashed #cbd5e1;
-  border-radius: 6px;
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
   padding: 1.25rem;
   text-align: center;
   cursor: pointer;
+  transition: all 0.2s;
+  background: #fafbfc;
+}
+
+.pe-upload-zone:hover {
+  border-color: #16a34a;
+  background: #f0fdf4;
 }
 
 .pe-upload-trigger {
@@ -346,39 +622,128 @@
   border: 1px solid #16a34a;
   color: #16a34a;
   padding: 0.3rem 1rem;
-  border-radius: 12px;
+  border-radius: 16px;
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.2s;
+}
+.pe-upload-trigger:hover {
+  background: #16a34a;
+  color: white;
 }
 
-.pe-constraints { font-size: 0.7rem; color: #94a3b8; margin-top: 0.35rem; }
+.pe-constraints { 
+  font-size: 0.7rem; 
+  color: #94a3b8; 
+  margin-top: 0.35rem; 
+}
 
-/* Missing tips styling banner line */
+/* ==========================================================================
+   MISSING TIPS BANNER
+   ========================================================================== */
 .pe-tips-banner {
   margin-top: 1rem;
-  background: #fff7ed;
-  border-radius: 6px;
-  padding: 0.6rem;
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 0.6rem 1rem;
   display: flex;
   gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
-.pe-tip-item { font-size: 0.8rem; color: #c2410c; }
-.pe-delta { color: #16a34a; }
+.pe-tip-item { 
+  font-size: 0.8rem; 
+  color: #92400e; 
+  font-weight: 500;
+}
+.pe-delta { 
+  color: #16a34a; 
+}
 
-/* Sticky Anchor Quicklinks structure */
-.pe-sidebar-inner { position: sticky; top: 1.5rem; }
-.pe-comp-card { background: #fff; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; }
-.pe-comp-top { display: flex; gap: 0.75rem; align-items: center; }
-.pe-comp-title { font-size: 0.85rem; font-weight: 600; }
-.pe-comp-status { font-size: 0.8rem; font-weight: 700; }
-.pe-ql-title { margin: 0 0 0.75rem 0; font-size: 0.88rem; font-weight: 700; }
-.pe-ql-nav { display: flex; flex-direction: column; gap: 0.6rem; }
-.pe-ql-link { text-decoration: none; color: #64748b; font-size: 0.85rem; font-weight: 500; }
-.pe-ql-link.active { color: #1e293b; font-weight: 700; }
+/* ==========================================================================
+   SIDEBAR
+   ========================================================================== */
+.pe-sidebar-inner { 
+  position: sticky; 
+  top: 1.5rem; 
+}
 
-/* Persistent Float Bottom Action Sync Row */
+.pe-comp-card { 
+  background: #fff; 
+  border: 1px solid #e2e8f0; 
+  padding: 1rem; 
+  border-radius: 12px; 
+  margin-bottom: 1rem; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.pe-comp-top { 
+  display: flex; 
+  gap: 0.75rem; 
+  align-items: center; 
+}
+
+.pe-comp-info {
+  flex: 1;
+}
+
+.pe-comp-title { 
+  font-size: 0.85rem; 
+  font-weight: 600; 
+  color: #0f172a;
+}
+.pe-comp-status { 
+  font-size: 0.8rem; 
+  font-weight: 700; 
+}
+
+.pe-quicklinks { 
+  background: #fff; 
+  border: 1px solid #e2e8f0; 
+  padding: 1rem; 
+  border-radius: 12px; 
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+
+.pe-ql-title { 
+  margin: 0 0 0.75rem 0; 
+  font-size: 0.88rem; 
+  font-weight: 700; 
+  color: #0f172a;
+}
+
+.pe-ql-nav { 
+  display: flex; 
+  flex-direction: column; 
+  gap: 0.35rem; 
+}
+
+.pe-ql-link { 
+  text-decoration: none; 
+  color: #64748b; 
+  font-size: 0.82rem; 
+  font-weight: 500; 
+  padding: 0.3rem 0.5rem;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.pe-ql-link:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+}
+
+.pe-ql-link.active { 
+  color: #0f172a; 
+  font-weight: 700; 
+  background: #f1f5f9;
+}
+
+/* ==========================================================================
+   FOOTER SAVE BAR
+   ========================================================================== */
 .pe-footer-bar {
   position: fixed;
   bottom: 0; left: 0; right: 0;
@@ -388,18 +753,203 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 -4px 12px rgba(0,0,0,0.02);
+  box-shadow: 0 -4px 12px rgba(0,0,0,0.04);
   z-index: 100;
 }
 
-.pe-footer-bar span { font-size: 0.8rem; color: #64748b; }
+.pe-footer-bar span { 
+  font-size: 0.8rem; 
+  color: #64748b; 
+}
+
 .pe-main-save-btn {
   background: #f97316;
   color: white;
   border: none;
-  padding: 0.5rem 1.25rem;
-  border-radius: 6px;
+  padding: 0.5rem 1.5rem;
+  border-radius: 8px;
   font-weight: 600;
+  font-size: 0.9rem;
   cursor: pointer;
+  transition: all 0.2s;
 }
-.pe-main-save-btn:hover { background: #ea580c; }
+.pe-main-save-btn:hover:not(:disabled) { 
+  background: #ea580c; 
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(249, 115, 22, 0.3);
+}
+.pe-main-save-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ==========================================================================
+   HINT TEXT
+   ========================================================================== */
+.pe-hint-text {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0.5rem 0 0 0;
+  font-style: italic;
+}
+
+/* ==========================================================================
+   SUB SECTIONS
+   ========================================================================== */
+.pe-sub-section {
+  margin-top: 0.75rem;
+}
+
+.pe-sub-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.pe-sub-header h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #475569;
+  margin: 0;
+}
+
+/* ==========================================================================
+   ACADEMIC ACHIEVEMENTS
+   ========================================================================== */
+.pe-ach-row {
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 0.5rem;
+  background: #f8fafc;
+  border-radius: 8px;
+  border: 1px solid #f1f5f9;
+}
+
+/* ==========================================================================
+   LOADING
+   ========================================================================== */
+.pe-fullpage-loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  gap: 1rem;
+}
+
+.pe-spinner-lg {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #16a34a;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   RESPONSIVE
+   ========================================================================== */
+@media (max-width: 992px) {
+  .pe-lang-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pe-pref-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .pe-wrap {
+    padding: 1rem 0.75rem 6rem 0.75rem;
+  }
+  
+  .pe-card {
+    padding: 1rem;
+  }
+  
+  .pe-hero {
+    padding: 1rem;
+  }
+  
+  .pe-comp-card {
+    display: none;
+  }
+  
+  .pe-footer-bar {
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    text-align: center;
+  }
+  
+  .pe-footer-bar span {
+    font-size: 0.7rem;
+  }
+  
+  .pe-main-save-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .pe-tabs {
+    overflow-x: auto;
+    gap: 1rem;
+  }
+  
+  .pe-tab {
+    white-space: nowrap;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .pe-hero-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pe-hero-left {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .pe-name-row {
+    justify-content: center;
+  }
+  
+  .pe-meta {
+    justify-content: center;
+  }
+  
+  .pe-stats-row {
+    justify-content: center;
+  }
+  
+  .pe-contact-row {
+    flex-wrap: wrap;
+  }
+  
+  .pe-phone-field, 
+  .pe-email-field {
+    width: 100%;
+  }
+  
+  .pe-lang-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .pe-tips-banner {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .pe-emp-row {
+    flex-direction: column;
+  }
+}

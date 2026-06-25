@@ -1,40 +1,65 @@
+/* Outer layout block matching .placement-stories-outer exactly */
 .similar-jobs-outer {
     background-color: #ffffff;
-    padding: 40px 32px 56px;
+    padding: 0 32px 56px; /* Removed top padding so it tucks seamlessly below placement stories */
     display: flex;
     justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
+/* The primary inner blue container matching .placement-stories-card exactly */
 .similar-jobs-content {
     width: 100%;
     max-width: 1180px;
     margin: 0 auto;
     background-color: #d4f1ff;
     border-radius: 20px;
-    padding: 40px 24px 36px;
+    padding: 32px 28px 36px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
+/* Heading alignment matched to stories layout specifications */
 .similar-jobs-title {
-    text-align: center;
+    text-align: left;
     font-size: 24px;
     font-weight: 700;
     color: #0f172a;
-    margin: 0 0 32px;
+    margin: 0 0 28px;
+    width: 100%;
 }
 
+.similar-jobs-slider-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    gap: 16px;
+}
+
+/* Matches gap setups inside story grid views */
 .similar-jobs-grid {
     display: grid;
-    gap: 20px;
-    margin-bottom: 28px;
+    gap: 24px;
+    width: 100%;
+    align-items: stretch;
 }
 
+/* Individual job card structures (White cards inside blue box) */
 .similar-job-card {
-    border: 1px solid #e5e9f0;
-    border-radius: 14px;
-    padding: 18px;
-    background: #fff;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 22px;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.06);
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    position: relative;
+    box-sizing: border-box;
     transition: box-shadow 0.2s ease;
 }
 
@@ -42,11 +67,12 @@
     box-shadow: 0 4px 16px rgba(15, 23, 42, 0.08);
 }
 
-.similar-job-top {
+.similar-job-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 12px;
+    width: 100%;
+    margin-bottom: 16px;
 }
 
 .similar-job-badge {
@@ -59,15 +85,15 @@
 }
 
 .similar-job-logo {
-    width: 34px;
-    height: 34px;
+    width: 38px;
+    height: 38px;
     border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: 700;
     font-size: 14px;
-    color: #fff;
+    color: #ffffff;
     overflow: hidden;
     flex-shrink: 0;
 }
@@ -78,93 +104,80 @@
     object-fit: cover;
 }
 
-.logo-bg-0 {
-    background: #1d4ed8;
-}
-
-.logo-bg-1 {
-    background: #0f172a;
-}
-
-.logo-bg-2 {
-    background: #db2777;
-}
+.logo-bg-0 { background: #1d4ed8; }
+.logo-bg-1 { background: #0f172a; }
+.logo-bg-2 { background: #db2777; }
 
 .similar-job-role {
     font-size: 16.5px;
     font-weight: 700;
     color: #0f172a;
-    margin: 0 0 4px;
+    margin: 0 0 4px 0;
+    text-align: left;
+    width: 100%;
 }
 
 .similar-job-company {
     font-size: 13px;
     color: #64748b;
-    margin: 0 0 14px;
+    margin: 0 0 14px 0;
+    text-align: left;
+    width: 100%;
 }
 
 .similar-job-meta {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 18px;
+    width: 100%;
+    align-items: flex-start;
 }
 
 .similar-job-meta-item {
-    font-size: 12.5px;
+    font-size: 13px;
     color: #475569;
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
 }
 
 .similar-job-footer {
     margin-top: auto;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 12px;
+    width: 100%;
+    align-items: flex-start;
 }
 
 .similar-job-type-tag {
-    align-self: flex-start;
     font-size: 11px;
     color: #475569;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    padding: 2px 8px;
+    padding: 3px 10px;
 }
 
 .similar-job-view-btn {
     width: 100%;
     background: #16a34a;
-    color: #fff;
+    color: #ffffff;
     border: none;
     border-radius: 8px;
     padding: 10px 0;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
+    text-align: center;
+    transition: background 0.2s ease;
 }
 
 .similar-job-view-btn:hover {
     background: #15803d;
 }
 
-.similar-jobs-loading {
-    text-align: center;
-    color: #64748b;
-    font-size: 14px;
-    padding: 24px 0;
-}
-
-.similar-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 16px;
-    padding-bottom: 12px;
-}
-
+/* Pagination Control Styles elements matching carousel items exactly */
 .similar-arrow {
     width: 32px;
     height: 32px;
@@ -178,6 +191,7 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+    flex-shrink: 0;
 }
 
 .similar-arrow:hover:not(:disabled) {
@@ -188,6 +202,13 @@
 .similar-arrow:disabled {
     opacity: 0.4;
     cursor: not-allowed;
+}
+
+.similar-dots-wrapper {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+    width: 100%;
 }
 
 .similar-dots {
@@ -211,17 +232,22 @@
     border-radius: 6px;
 }
 
+/* Responsive Overrides matched exactly with Placement Stories breakpoints */
 @media (max-width: 640px) {
     .similar-jobs-outer {
-        padding: 24px 16px 36px;
+        padding: 0 16px 36px;
     }
-
     .similar-jobs-content {
-        border-radius: 16px;
-        padding: 24px 16px 26px;
+        padding: 22px 16px 26px;
     }
-
+    .similar-jobs-title {
+        font-size: 19px;
+    }
+    .similar-job-card {
+        padding: 18px;
+    }
     .similar-jobs-grid {
         grid-template-columns: 1fr !important;
+        gap: 16px;
     }
 }

@@ -94,8 +94,12 @@ export default function ProfileEditor() {
   const [profile, setProfile] = useState(EMPTY);
   const [activeLink, setActiveLink] = useState('preference');
   
-  // New local state to handle real-time input addition for collections without standard forms
   const [newSkill, setNewSkill] = useState('');
+  const [newInternship, setNewInternship] = useState('');
+  const [newProject, setNewProject] = useState('');
+  const [newCertification, setNewCertification] = useState('');
+  const [newAward, setNewAward] = useState('');
+  const [newCompetitiveExam, setNewCompetitiveExam] = useState('');
 
   // ── Fetch on mount ────────────────────────────────────────
   useEffect(() => {
@@ -142,8 +146,8 @@ export default function ProfileEditor() {
   // ── Active section scroll tracking ───────────────────────
   useEffect(() => {
     const onScroll = () => {
-      const QUICK_LINKS = ['preference', 'education', 'key-skills', 'languages', 'profile-summary', 'employment', 'academic-achievements', 'resume'];
-      for (const id of [...QUICK_LINKS].reverse()) {
+      const sections = ['preference', 'education', 'key-skills', 'languages', 'interests', 'projects', 'profile-summary', 'accomplishments', 'competitive-exams', 'employment', 'academic-achievements', 'resume'];
+      for (const id of [...sections].reverse()) {
         const el = document.getElementById(id);
         if (el && el.getBoundingClientRect().top <= 140) {
           setActiveLink(id); break;
@@ -156,7 +160,6 @@ export default function ProfileEditor() {
 
   const completionRate = useMemo(() => calcCompletion(profile), [profile]);
   const missingTips = useMemo(() => getMissingTips(profile), [profile]);
-  const ringColor = completionRate < 40 ? '#ef4444' : completionRate < 70 ? '#f97316' : '#16a34a';
 
   // ── Direct State Updates ───────────────────────────────────
   const handleChange = (field, value) => {
@@ -188,6 +191,63 @@ export default function ProfileEditor() {
     }
   };
 
+  const handleAddInternship = (e) => {
+    if (e.key === 'Enter' && newInternship.trim()) {
+      addArrayItem('internships', { 
+        company: newInternship.trim(), 
+        role: '', 
+        duration: '', 
+        description: '' 
+      });
+      setNewInternship('');
+    }
+  };
+
+  const handleAddProject = (e) => {
+    if (e.key === 'Enter' && newProject.trim()) {
+      addArrayItem('projects', { 
+        title: newProject.trim(), 
+        description: '', 
+        technologies: '', 
+        link: '' 
+      });
+      setNewProject('');
+    }
+  };
+
+  const handleAddCertification = (e) => {
+    if (e.key === 'Enter' && newCertification.trim()) {
+      addArrayItem('certifications', { 
+        name: newCertification.trim(), 
+        issuer: '', 
+        year: '' 
+      });
+      setNewCertification('');
+    }
+  };
+
+  const handleAddAward = (e) => {
+    if (e.key === 'Enter' && newAward.trim()) {
+      addArrayItem('awards', { 
+        name: newAward.trim(), 
+        issuer: '', 
+        year: '' 
+      });
+      setNewAward('');
+    }
+  };
+
+  const handleAddCompetitiveExam = (e) => {
+    if (e.key === 'Enter' && newCompetitiveExam.trim()) {
+      addArrayItem('competitiveExams', { 
+        name: newCompetitiveExam.trim(), 
+        score: '', 
+        year: '' 
+      });
+      setNewCompetitiveExam('');
+    }
+  };
+
   // ── Save to Backend Trigger ────────────────────────────────
   const handleSave = async () => {
     const token = localStorage.getItem('token');
@@ -205,7 +265,11 @@ export default function ProfileEditor() {
           work_status: null,
         }),
         profile.prefJobType
-          ? updatePreferences({ prefJobType: profile.prefJobType, prefLocation: profile.prefLocation, availability: profile.availability })
+          ? updatePreferences({ 
+              prefJobType: profile.prefJobType, 
+              prefLocation: profile.prefLocation, 
+              availability: profile.availability 
+            })
           : Promise.resolve(),
       ]);
       toast.success('Profile synced with backend successfully!');
@@ -243,7 +307,9 @@ export default function ProfileEditor() {
                 <ProgressRing pct={completionRate} />
                 <div className="pe-comp-info">
                   <div className="pe-comp-title">Profile Strength</div>
-                  <div className="pe-comp-status" style={{ color: ringColor }}>{completionRate}% complete</div>
+                  <div className="pe-comp-status" style={{ color: completionRate < 40 ? '#ef4444' : completionRate < 70 ? '#f97316' : '#16a34a' }}>
+                    {completionRate}% complete
+                  </div>
                 </div>
               </div>
             </div>
@@ -251,9 +317,22 @@ export default function ProfileEditor() {
             <div className="pe-quicklinks">
               <h4 className="pe-ql-title">Quick links</h4>
               <nav className="pe-ql-nav">
-                {['preference', 'education', 'key-skills', 'languages', 'profile-summary', 'employment', 'academic-achievements', 'resume'].map(id => (
+                {[
+                  { id: 'preference', label: 'Preferences' },
+                  { id: 'education', label: 'Education' },
+                  { id: 'key-skills', label: 'Key skills' },
+                  { id: 'languages', label: 'Languages' },
+                  { id: 'interests', label: 'Interests' },
+                  { id: 'projects', label: 'Projects' },
+                  { id: 'profile-summary', label: 'Profile summary' },
+                  { id: 'accomplishments', label: 'Accomplishments' },
+                  { id: 'competitive-exams', label: 'Competitive exams' },
+                  { id: 'employment', label: 'Employment' },
+                  { id: 'academic-achievements', label: 'Academic achievements' },
+                  { id: 'resume', label: 'Resume' }
+                ].map(({ id, label }) => (
                   <a key={id} href={`#${id}`} className={`pe-ql-link ${activeLink === id ? 'active' : ''}`}>
-                    {id.charAt(0).toUpperCase() + id.slice(1).replace('-', ' ')}
+                    {label}
                   </a>
                 ))}
               </nav>
@@ -274,22 +353,15 @@ export default function ProfileEditor() {
                       type="text" 
                       className="pe-inline-input name-bold" 
                       value={profile.name} 
+                      placeholder="Your Name"
                       onChange={e => handleChange('name', e.target.value)}
                     />
+                    <span className="pe-degree-tag">{profile.degree}</span>
                   </div>
                   
-                  {/* Degree Dropdown Field */}
-                  <select 
-                    className="pe-inline-select sub-bold" 
-                    value={profile.degree} 
-                    onChange={e => handleChange('degree', e.target.value)}
-                  >
-                    {['B.Sc', 'B.Tech', 'B.Com', 'BA', 'BCA', 'Other'].map(opt => <option key={opt} value={opt}>{opt}</option>)}
-                  </select>
-
                   <input 
                     type="text" 
-                    className="pe-inline-input text-muted row-margin" 
+                    className="pe-inline-input sub-bold" 
                     value={profile.college} 
                     placeholder="Add college / university name"
                     onChange={e => handleChange('college', e.target.value)}
@@ -303,6 +375,12 @@ export default function ProfileEditor() {
                       </select>
                     </span>
                     <span>📅 <input type="date" className="pe-inline-input dynamic-width" value={profile.dob} onChange={e => handleChange('dob', e.target.value)} /></span>
+                  </div>
+
+                  <div className="pe-stats-row">
+                    <span className="pe-stat-item">0 <span className="pe-stat-label">Followers</span></span>
+                    <span className="pe-stat-item">0 <span className="pe-stat-label">Following</span></span>
+                    <span className="pe-stat-item">0 <span className="pe-stat-label">Saved</span></span>
                   </div>
                 </div>
               </div>
@@ -421,6 +499,53 @@ export default function ProfileEditor() {
             </div>
           </section>
 
+          {/* INTERESTS / INTERNSHIPS */}
+          <section className="pe-card" id="interests">
+            <div className="pe-card-hd">
+              <h3>Internships</h3>
+            </div>
+            <div className="pe-chips">
+              {profile.internships.map((item, i) => (
+                <span key={i} className="pe-chip grey">
+                  {item.company} 
+                  <button onClick={() => removeArrayItem('internships', item.id)}>×</button>
+                </span>
+              ))}
+              <input 
+                type="text" 
+                className="pe-inline-input add-skill-placeholder" 
+                placeholder="+ Add internship company..." 
+                value={newInternship}
+                onChange={e => setNewInternship(e.target.value)}
+                onKeyDown={handleAddInternship}
+              />
+            </div>
+            <p className="pe-hint-text">Find out the company you interested in, what projects you are interested in, what you are looking for to start</p>
+          </section>
+
+          {/* PROJECTS */}
+          <section className="pe-card" id="projects">
+            <div className="pe-card-hd">
+              <h3>Projects</h3>
+            </div>
+            <div className="pe-chips">
+              {profile.projects.map((item, i) => (
+                <span key={i} className="pe-chip grey">
+                  {item.title} 
+                  <button onClick={() => removeArrayItem('projects', item.id)}>×</button>
+                </span>
+              ))}
+              <input 
+                type="text" 
+                className="pe-inline-input add-skill-placeholder" 
+                placeholder="+ Add project..." 
+                value={newProject}
+                onChange={e => setNewProject(e.target.value)}
+                onKeyDown={handleAddProject}
+              />
+            </div>
+          </section>
+
           {/* PROFILE SUMMARY */}
           <section className="pe-card" id="profile-summary">
             <div className="pe-card-hd"><h3>Profile summary</h3></div>
@@ -430,6 +555,97 @@ export default function ProfileEditor() {
               placeholder="Write an impactful overview of your skills..."
               onChange={e => handleChange('summary', e.target.value)}
             />
+          </section>
+
+          {/* ACCOMPLISHMENTS */}
+          <section className="pe-card" id="accomplishments">
+            <div className="pe-card-hd"><h3>Accomplishments</h3></div>
+            
+            {/* Certifications */}
+            <div className="pe-sub-section">
+              <div className="pe-sub-header">
+                <h4>Certifications</h4>
+                <button className="pe-add-btn" onClick={() => addArrayItem('certifications', { name: '', issuer: '', year: '' })}>Add</button>
+              </div>
+              <div className="pe-chips">
+                {profile.certifications.map((item, i) => (
+                  <span key={i} className="pe-chip grey">
+                    {item.name} 
+                    <button onClick={() => removeArrayItem('certifications', item.id)}>×</button>
+                  </span>
+                ))}
+                <input 
+                  type="text" 
+                  className="pe-inline-input add-skill-placeholder" 
+                  placeholder="+ Add certification..." 
+                  value={newCertification}
+                  onChange={e => setNewCertification(e.target.value)}
+                  onKeyDown={handleAddCertification}
+                />
+              </div>
+            </div>
+
+            {/* Awards */}
+            <div className="pe-sub-section">
+              <div className="pe-sub-header">
+                <h4>Awards</h4>
+                <button className="pe-add-btn" onClick={() => addArrayItem('awards', { name: '', issuer: '', year: '' })}>Add</button>
+              </div>
+              <div className="pe-chips">
+                {profile.awards.map((item, i) => (
+                  <span key={i} className="pe-chip grey">
+                    {item.name} 
+                    <button onClick={() => removeArrayItem('awards', item.id)}>×</button>
+                  </span>
+                ))}
+                <input 
+                  type="text" 
+                  className="pe-inline-input add-skill-placeholder" 
+                  placeholder="+ Add award..." 
+                  value={newAward}
+                  onChange={e => setNewAward(e.target.value)}
+                  onKeyDown={handleAddAward}
+                />
+              </div>
+            </div>
+
+            {/* Club & Competitions */}
+            <div className="pe-sub-section">
+              <div className="pe-sub-header">
+                <h4>Club &amp; Competitions</h4>
+                <button className="pe-add-btn" onClick={() => addArrayItem('competitiveExams', { name: '', score: '', year: '' })}>Add</button>
+              </div>
+              <div className="pe-chips">
+                {profile.competitiveExams.map((item, i) => (
+                  <span key={i} className="pe-chip grey">
+                    {item.name} 
+                    <button onClick={() => removeArrayItem('competitiveExams', item.id)}>×</button>
+                  </span>
+                ))}
+                <input 
+                  type="text" 
+                  className="pe-inline-input add-skill-placeholder" 
+                  placeholder="+ Add competition..." 
+                  value={newCompetitiveExam}
+                  onChange={e => setNewCompetitiveExam(e.target.value)}
+                  onKeyDown={handleAddCompetitiveExam}
+                />
+              </div>
+            </div>
+          </section>
+
+          {/* COMPETITIVE EXAMS */}
+          <section className="pe-card" id="competitive-exams">
+            <div className="pe-card-hd"><h3>Competitive exams</h3></div>
+            <p className="pe-hint-text">Find out the competitive exams that you are interested in</p>
+            <div className="pe-chips">
+              {profile.competitiveExams.map((item, i) => (
+                <span key={i} className="pe-chip grey">
+                  {item.name} {item.score && `(${item.score})`}
+                  <button onClick={() => removeArrayItem('competitiveExams', item.id)}>×</button>
+                </span>
+              ))}
+            </div>
           </section>
 
           {/* EMPLOYMENT */}
@@ -496,7 +712,7 @@ export default function ProfileEditor() {
       <footer className="pe-footer-bar">
         <span>Updates apply instantly to local views. Sync with backend permanently before leaving.</span>
         <button className="pe-main-save-btn" onClick={handleSave} disabled={saving}>
-          {saving ? "Syncing..." : "Save Changes"}
+          {saving ? "Syncing..." : "Ask to edit"}
         </button>
       </footer>
     </div>

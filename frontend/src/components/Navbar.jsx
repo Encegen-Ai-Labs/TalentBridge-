@@ -81,7 +81,7 @@ const handleSearch = (e) => {
 
           {/* LOGO */}
           <Link to="/" className="navbar-logo">
-            <span className="logo-text">LOGO</span>
+            <span className="logo-text">Talent Bridge</span>
           </Link>
 
           {/* DESKTOP LINKS */}
@@ -99,6 +99,10 @@ const handleSearch = (e) => {
 
                 <Link to="/company/applicants" className="nav-link">
                   Applicants
+                </Link>
+
+                <Link to="/company/invites" className="nav-link">
+                  Campus Drives
                 </Link>
 
                 
@@ -134,10 +138,7 @@ const handleSearch = (e) => {
                       className="search-input"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
-                      onChange={(e) => {
-                        setSearchQuery(e.target.value);
-                        navigate(`/jobs?search=${encodeURIComponent(e.target.value)}`);
-                      }}
+                      onKeyDown={handleSearch}
                      />
                   </div>
                 )}
@@ -302,7 +303,9 @@ const handleSearch = (e) => {
                 Applicants
               </Link>
 
-           
+              <Link to="/company/invites" onClick={closeMobileMenu}>
+                Campus Drives
+              </Link>
 
               <Link to="/company/profile" onClick={closeMobileMenu}>
                 Company Profile
@@ -318,8 +321,8 @@ const handleSearch = (e) => {
                 Jobs
               </Link>
 
-              <Link to="/courses" onClick={closeMobileMenu}>
-                Courses
+              <Link to="/contact-us" onClick={closeMobileMenu}>
+                Contact Us
               </Link>
             </>
           )}

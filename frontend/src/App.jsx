@@ -20,8 +20,12 @@ import CourseDetails from './pages/CourseDetails';
 import UserProfile from './pages/UserProfile';
 import Navbar from './components/Navbar';
 import SavedJobs from './pages/SavedJobs';
+import LandingPage from './pages/LandingPage';
+import SearchResults from './pages/SearchResults';
+import CompanyInvites from './pages/CompanyInvites';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
+import Footer from './components/Footer';
 import './index.css';
 
 function HomeRedirect() {
@@ -29,7 +33,7 @@ function HomeRedirect() {
   const storedUser = localStorage.getItem('user');
 
   if (!token || !storedUser) {
-    return <StudentOpportunities />;
+    return <LandingPage />;
   }
 
   try {
@@ -46,7 +50,7 @@ function HomeRedirect() {
 
 function AppContent() {
   const location = useLocation();
-  const hideNavbar = ['/login', '/register', '/employer/login', '/forgot-password'].includes(location.pathname);
+  const hideNavbar = ['/login', '/register', '/employer/login', '/forgot-password', '/employer/register'].includes(location.pathname);
   return (
     <>
       <ToastContainer position="top-right" autoClose={2500} />
@@ -60,23 +64,25 @@ function AppContent() {
         <Route path="/company/dashboard" element={<CompanyDashboard />} />
         <Route path="/company/profile" element={<CompanyProfile />} />
         <Route path="/company/post-job" element={<PostJob />} />
+        <Route path="/company/applicants" element={<Applicants />} />
+        <Route path="/company/invites" element={<CompanyInvites />} />
         <Route path="/internships" element={<StudentOpportunities />} />
         <Route path="/jobs" element={<StudentOpportunities />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/saved-jobs" element={<SavedJobs />} />
         <Route path="/edit-preferences" element={<EditPreferences />} />
         <Route path="/edit-resume" element={<EditResume />} />
         <Route path="/applications" element={<MyApplications />} />
         <Route path="/profile/edit" element={<ProfileEditor />} />
         <Route path="/profile" element={<UserProfile />} />
-        <Route path="/company/applicants" element={<Applicants />} />
         <Route path="/contact-us" element={<ContactUs />} />
         <Route path="/course/:courseId" element={<CourseDetails />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/opportunity/:id" element={<OpportunityDetails />} />
         <Route path="/apply/:id" element={<ApplyJob />} />
-        <Route path="/forgot-password" element={<ForgotPassword />} />
       </Routes>
-    </>
+      <Footer />
+    </> 
   );
 }
 

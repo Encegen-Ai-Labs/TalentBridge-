@@ -370,3 +370,75 @@ exports.registerCompany = async (req, res) => {
     });
   }
 };
+
+// ================= REGISTER TPO =================
+exports.registerTPO = async (req, res) => {
+  try {
+    const { name, email, password, mobile_number, college_id } = req.body;
+
+    if (!name?.trim() || !email?.trim() || !password?.trim() || !mobile_number?.trim() || !college_id) {
+      return res.status(400).json({ message: "All fields including college are required" });
+    }
+
+    db.query("SELECT * FROM college WHERE college_id = ?", [college_id], async (err, college) => {
+      if (err) return res.status(500).json({ message: "Database error" });
+      if (!college.length) return res.status(404).json({ message: "College not found" });
+
+      db.query("SELECT * FROM users WHERE email = ?", [email], async (err, existingUser) => {
+        if (err) return res.status(500).json({ message: "Database error" });
+        if (existingUser.length > 0) return res.status(400).json({ message: "Email already exists" });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        db.query(
+          `INSERT INTO users (name, email, password_hash, role, mobile_number, work_status)
+           VALUES (?, ?, ?, 'tpo', ?, 'employer')`,
+          [name, email, hashedPassword, mobile_number],
+          (err, userResult) => {
+            if (err) return res.status(500).json({ message: "Registration failed" });
+
+            const userId = userResult.insertId;
+
+            db.query(
+              "INSERT INTO tpo (user_id, college_id) VALUES (?, ?)",
+              [userId, college_id],
+              (err) => {
+                if (err) return res.status(500).json({ message: "TPO profile creation failed" });
+                return res.status(201).json({
+                  message: "TPO registered successfully",
+                  user_id: userId,
+                });
+              }
+            );
+          }
+        );
+      });
+    });
+  } catch (error) {
+    return res.status(500).json({ message: "Server error" });
+  }
+};
+
+// ================= GET COLLEGES =================
+exports.getColleges = (req, res) => {
+  db.query("SELECT college_id, college_name, city FROM college ORDER BY college_name", (err, result) => {
+    if (err) return res.status(500).json({ message: "Database error" });
+    res.json(result || []);
+  });
+};
+
+// ================= FORGOT PASSWORD =================
+exports.forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  if (!email || !email.trim()) {
+    return res.status(400).json({ message: "Email is required" });
+  }
+
+  db.query("SELECT * FROM users WHERE email = ?", [email.trim()], (err, result) => {
+    if (err) return res.status(500).json({ message: "Database error" });
+    // Always return success to prevent email enumeration
+    return res.status(200).json({
+      message: "If this email exists, a reset link has been sent."
+    });
+  });
+};

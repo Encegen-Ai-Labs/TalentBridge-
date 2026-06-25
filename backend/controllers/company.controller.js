@@ -32,7 +32,6 @@ exports.createCompanyProfile = (req, res) => {
     (err, result) => {
       if (err) return res.status(500).json(err);
 
-      // Helper function to check if profile is completed
       const isProfileCompleted = (data) => {
         return !!(
           data.company_name &&
@@ -48,7 +47,6 @@ exports.createCompanyProfile = (req, res) => {
       };
 
       if (result.length) {
-        // Update existing profile
         const profileData = {
           company_name: company_name || result[0].company_name,
           industry: industry || result[0].industry,
@@ -97,7 +95,6 @@ exports.createCompanyProfile = (req, res) => {
           });
         });
       } else {
-        // Create new profile
         const profileData = {
           company_name,
           industry,
@@ -148,6 +145,7 @@ exports.createCompanyProfile = (req, res) => {
   );
 };
 
+
 // ===============================
 // GET COMPANY DASHBOARD STATS
 // ===============================
@@ -174,9 +172,8 @@ exports.getDashboardStats = (req, res) => {
 
     const qJobs = "SELECT COUNT(*) AS count FROM jobs WHERE company_id = ?";
     const qApps = "SELECT COUNT(*) AS count FROM applications a JOIN jobs j ON a.job_id = j.job_id WHERE j.company_id = ?";
-    const qInvites = "SELECT COUNT(*) AS count FROM campus_drive_requests WHERE company_id = ?";
     const qHirings = "SELECT COUNT(*) AS count FROM applications a JOIN jobs j ON a.job_id = j.job_id WHERE j.company_id = ? AND a.status = 'selected'";
-    
+
     const qRecentApplicants = `
       SELECT 
         a.application_id,
@@ -213,31 +210,27 @@ exports.getDashboardStats = (req, res) => {
 
     db.query(qJobs, [company_id], (err, jobsRes) => {
       if (err) return res.status(500).json(err);
-      
+
       db.query(qApps, [company_id], (err, appsRes) => {
         if (err) return res.status(500).json(err);
-        
-        db.query(qInvites, [company_id], (err, invitesRes) => {
-          if (err) return res.status(500).json(err);
-          
-          db.query(qHirings, [company_id], (err, hiringsRes) => {
-            if (err) return res.status(500).json(err);
-            
-            db.query(qRecentApplicants, [company_id], (err, recentAppsRes) => {
-              if (err) return res.status(500).json(err);
-              
-              db.query(qRecentJobs, [company_id], (err, recentJobsRes) => {
-                if (err) return res.status(500).json(err);
 
-                res.json({
-                  company_name: company.company_name,
-                  totalJobs: jobsRes[0].count,
-                  totalApplications: appsRes[0].count,
-                  totalInvites: invitesRes[0].count,
-                  totalHirings: hiringsRes[0].count,
-                  recentApplicants: recentAppsRes,
-                  recentJobs: recentJobsRes
-                });
+        db.query(qHirings, [company_id], (err, hiringsRes) => {
+          if (err) return res.status(500).json(err);
+
+          db.query(qRecentApplicants, [company_id], (err, recentAppsRes) => {
+            if (err) return res.status(500).json(err);
+
+            db.query(qRecentJobs, [company_id], (err, recentJobsRes) => {
+              if (err) return res.status(500).json(err);
+
+              res.json({
+                company_name: company.company_name,
+                totalJobs: jobsRes[0].count,
+                totalApplications: appsRes[0].count,
+                totalInvites: 0,
+                totalHirings: hiringsRes[0].count,
+                recentApplicants: recentAppsRes,
+                recentJobs: recentJobsRes
               });
             });
           });
@@ -246,6 +239,11 @@ exports.getDashboardStats = (req, res) => {
     });
   });
 };
+
+
+// ===============================
+// GET COMPANY APPLICANTS
+// ===============================
 exports.getCompanyApplicants = (req, res) => {
   const user_id = req.user.user_id;
 
@@ -293,6 +291,10 @@ exports.getCompanyApplicants = (req, res) => {
   });
 };
 
+
+// ===============================
+// UPDATE APPLICATION STATUS
+// ===============================
 exports.updateApplicationStatus = (req, res) => {
   const application_id = req.params.application_id;
   const { status } = req.body;
@@ -331,96 +333,30 @@ exports.updateApplicationStatus = (req, res) => {
   });
 };
 
+
 // ===============================
-// GET COMPANY INVITES
+// GET COMPANY INVITES (stub - no campus drive table)
 // ===============================
 exports.getCompanyInvites = (req, res) => {
-  const user_id = req.user.user_id;
-
-  db.query(
-    "SELECT company_id FROM company WHERE user_id = ?",
-    [user_id],
-    (err, result) => {
-      if (err) return res.status(500).json(err);
-
-      if (!result.length) {
-        return res.status(404).json({ message: "Company not found" });
-      }
-
-      const company_id = result[0].company_id;
-
-      db.query(
-        `SELECT r.*, c.college_name
-         FROM campus_drive_requests r
-         JOIN college c ON r.college_id = c.college_id
-         WHERE r.company_id = ?
-         ORDER BY r.request_id DESC`,
-        [company_id],
-        (err, data) => {
-          if (err) return res.status(500).json(err);
-
-          res.json(data);
-        }
-      );
-    }
-  );
+  return res.json([]);
 };
 
 
 // ===============================
-// ACCEPT INVITE
+// ACCEPT INVITE (stub - no campus drive table)
 // ===============================
 exports.acceptInvite = (req, res) => {
-  const { request_id } = req.body;
-  const user_id = req.user.user_id;
-
-  db.query(
-    `SELECT c.company_id 
-     FROM company c
-     JOIN campus_drive_requests r ON r.company_id = c.company_id
-     WHERE r.request_id = ? AND c.user_id = ?`,
-    [request_id, user_id],
-    (err, result) => {
-      if (err) return res.status(500).json(err);
-
-      if (!result.length) {
-        return res.status(403).json({ message: "Not authorized" });
-      }
-
-      db.query(
-        `UPDATE campus_drive_requests 
-         SET status = 'accepted'
-         WHERE request_id = ? AND status = 'pending'`,
-        [request_id],
-        (err, data) => {
-          if (err) return res.status(500).json(err);
-
-          res.json({ message: "Invite accepted" });
-        }
-      );
-    }
-  );
+  return res.status(404).json({ message: "Invite feature not available" });
 };
 
 
 // ===============================
-// REJECT INVITE
+// REJECT INVITE (stub - no campus drive table)
 // ===============================
 exports.rejectInvite = (req, res) => {
-  const { request_id } = req.body;
-
-  db.query(
-    `UPDATE campus_drive_requests 
-     SET status = 'rejected'
-     WHERE request_id = ?`,
-    [request_id],
-    (err, data) => {
-      if (err) return res.status(500).json(err);
-
-      res.json({ message: "Invite rejected" });
-    }
-  );
+  return res.status(404).json({ message: "Invite feature not available" });
 };
+
 
 // ===============================
 // CREATE JOB FROM DRIVE
@@ -429,8 +365,9 @@ exports.createJobFromDrive = (req, res) => {
   const user_id = req.user.user_id;
   const { drive_id, title, description, skills } = req.body;
 
-  // get company
   db.query("SELECT * FROM company WHERE user_id = ?", [user_id], (err, compRes) => {
+    if (err) return res.status(500).json(err);
+
     const company = compRes[0];
 
     const query = `
@@ -449,6 +386,7 @@ exports.createJobFromDrive = (req, res) => {
     });
   });
 };
+
 
 // ===============================
 // GET PROFILE STATUS
@@ -473,6 +411,7 @@ exports.getProfileStatus = (req, res) => {
   );
 };
 
+
 // ===============================
 // GET FULL COMPANY PROFILE
 // ===============================
@@ -484,10 +423,10 @@ exports.getCompanyProfile = (req, res) => {
 
     if (!result.length) return res.status(404).json({ message: 'Company profile not found' });
 
-    const profile = result[0];
-    res.json({ data: profile });
+    res.json({ data: result[0] });
   });
 };
+
 
 // ===============================
 // UPDATE COMPANY PROFILE (with uploads)
@@ -495,7 +434,6 @@ exports.getCompanyProfile = (req, res) => {
 exports.updateCompanyProfile = (req, res) => {
   const user_id = req.user.user_id;
 
-  // fields from body
   const {
     company_name,
     industry,
@@ -514,15 +452,12 @@ exports.updateCompanyProfile = (req, res) => {
     official_company_email
   } = req.body;
 
-  // files
   const files = req.files || {};
 
-  // basic server-side validation
   if (!company_name || !industry) {
     return res.status(400).json({ message: 'Company name and industry are required' });
   }
 
-  // Build profile object
   const profileData = {
     company_name,
     industry,
@@ -539,20 +474,26 @@ exports.updateCompanyProfile = (req, res) => {
     linkedin_profile: linkedin_profile || null,
     official_website: official_website || null,
     official_company_email: official_company_email || null,
-    gst_certificate: files.gst_certificate && files.gst_certificate[0] ? path.join('uploads','company-documents', path.basename(files.gst_certificate[0].path)) : null,
-    registration_certificate: files.registration_certificate && files.registration_certificate[0] ? path.join('uploads','company-documents', path.basename(files.registration_certificate[0].path)) : null,
-    pan_card: files.pan_card && files.pan_card[0] ? path.join('uploads','company-documents', path.basename(files.pan_card[0].path)) : null,
-    company_logo: files.company_logo && files.company_logo[0] ? path.join('uploads','company-documents', path.basename(files.company_logo[0].path)) : null
+    gst_certificate: files.gst_certificate?.[0]
+      ? path.join('uploads', 'company-documents', path.basename(files.gst_certificate[0].path))
+      : null,
+    registration_certificate: files.registration_certificate?.[0]
+      ? path.join('uploads', 'company-documents', path.basename(files.registration_certificate[0].path))
+      : null,
+    pan_card: files.pan_card?.[0]
+      ? path.join('uploads', 'company-documents', path.basename(files.pan_card[0].path))
+      : null,
+    company_logo: files.company_logo?.[0]
+      ? path.join('uploads', 'company-documents', path.basename(files.company_logo[0].path))
+      : null
   };
 
   db.query("SELECT * FROM company WHERE user_id = ?", [user_id], (err, result) => {
     if (err) return res.status(500).json(err);
 
     if (result.length) {
-      // update
       const existing = result[0];
 
-      // Merge existing values for fields not provided or uploaded
       const mergedData = {
         company_name: profileData.company_name || existing.company_name,
         industry: profileData.industry || existing.industry,
@@ -629,8 +570,8 @@ exports.updateCompanyProfile = (req, res) => {
 
         return res.json({ message: 'Profile updated', profile_completed: !!isComplete });
       });
+
     } else {
-      // insert new
       const isComplete = !!(
         profileData.company_name &&
         profileData.industry &&
@@ -683,9 +624,12 @@ exports.updateCompanyProfile = (req, res) => {
       db.query(insertQuery, values, (err, data) => {
         if (err) return res.status(500).json(err);
 
-        return res.status(201).json({ message: 'Profile created', profile_completed: !!isComplete, company_id: data.insertId });
+        return res.status(201).json({
+          message: 'Profile created',
+          profile_completed: !!isComplete,
+          company_id: data.insertId
+        });
       });
     }
   });
-
 };
