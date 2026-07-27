@@ -11,9 +11,6 @@ router.post("/profile", verifyToken, studentController.createStudentProfile);
 // Get profile
 router.get("/profile", verifyToken, studentController.getStudentProfile);
 
-// get shared jobs
-router.get("/shared-jobs", verifyToken, studentController.getSharedJobs);
-
 // update profile
 router.put("/profile", verifyToken, upload.single('avatar'), studentController.updateProfile);
 

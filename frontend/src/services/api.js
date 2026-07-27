@@ -142,50 +142,6 @@ export const updateApplicationStatus = async (applicationId, status) => {
   return data;
 };
 
-export const getCompanyInvites = async () => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${BASE_URL}/company/invites`, {
-    method: 'GET',
-    headers: { 
-      Authorization: `Bearer ${token}`, 
-      'Content-Type': 'application/json' 
-    },
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.message || 'Failed to fetch invites');
-  return data;
-};
-
-export const acceptCompanyInvite = async (request_id) => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${BASE_URL}/company/accept-invite`, {
-    method: 'POST',
-    headers: { 
-      Authorization: `Bearer ${token}`, 
-      'Content-Type': 'application/json' 
-    },
-    body: JSON.stringify({ request_id }),
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.message || 'Failed to accept invite');
-  return data;
-};
-
-export const rejectCompanyInvite = async (request_id) => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${BASE_URL}/company/reject-invite`, {
-    method: 'POST',
-    headers: { 
-      Authorization: `Bearer ${token}`, 
-      'Content-Type': 'application/json' 
-    },
-    body: JSON.stringify({ request_id }),
-  });
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.message || 'Failed to reject invite');
-  return data;
-};
-
 // ============================================
 // JOB SERVICES
 // ============================================

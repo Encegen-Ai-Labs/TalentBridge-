@@ -22,7 +22,6 @@ import Navbar from './components/Navbar';
 import SavedJobs from './pages/SavedJobs';
 import LandingPage from './pages/LandingPage';
 import SearchResults from './pages/SearchResults';
-import CompanyInvites from './pages/CompanyInvites';
 import 'react-toastify/dist/ReactToastify.css';
 import { ToastContainer } from 'react-toastify';
 import Footer from './components/Footer';
@@ -65,7 +64,6 @@ function AppContent() {
         <Route path="/company/profile" element={<CompanyProfile />} />
         <Route path="/company/post-job" element={<PostJob />} />
         <Route path="/company/applicants" element={<Applicants />} />
-        <Route path="/company/invites" element={<CompanyInvites />} />
         <Route path="/internships" element={<StudentOpportunities />} />
         <Route path="/jobs" element={<StudentOpportunities />} />
         <Route path="/search" element={<SearchResults />} />

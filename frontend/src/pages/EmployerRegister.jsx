@@ -212,14 +212,7 @@ export default function EmployerRegister() {
                   <p>Publish internships, full-time jobs, and gig campaigns with no hidden charges.</p>
                 </div>
               </div>
-              
-              <div className="checklist-item">
-                <span className="check-bullet">✓</span>
-                <div>
-                  <h4>TPO Integration</h4>
-                  <p>Conduct campus hiring programs and drive invitation workflows instantly.</p>
-                </div>
-              </div>
+
 
               <div className="checklist-item">
                 <span className="check-bullet">✓</span>

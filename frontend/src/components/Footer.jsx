@@ -35,7 +35,6 @@ export default function Footer() {
 
           <div className="footer-column">
             <h3>SITEMAP</h3>
-            <a href="/">College TPO registration</a>
             <a href="/">List of Companies</a>
           </div>
 

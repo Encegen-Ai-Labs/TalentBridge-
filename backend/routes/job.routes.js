@@ -16,6 +16,6 @@ router.post("/create", verifyToken, jobController.createJob);
 router.put("/:jobId", verifyToken, jobController.updateJob);
 router.delete("/:jobId", verifyToken, jobController.deleteJob);
 router.post("/:jobId/close", verifyToken, jobController.closeJob);
-router.get("/:jobId/applications", verifyToken, jobController.getJobApplications);
+// router.get("/:jobId/applications", verifyToken, jobController.getJobApplications);
 
 module.exports = router;

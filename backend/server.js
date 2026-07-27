@@ -25,16 +25,6 @@ app.use("/api/jobs", jobRoutes);
 const applicationRoutes = require("./routes/application.routes");
 app.use("/api/applications", applicationRoutes);
 
-const tpoRoutes = require("./routes/tpo.routes");
-app.use("/api/tpo", tpoRoutes);
-
-const driveRoutes = require("./routes/drive.routes");
-app.use("/api/drive", driveRoutes);
-
-
-const selectionRoutes = require("./routes/selection.routes");
-app.use("/api/selection", selectionRoutes);
-
 app.get("/", (req, res) => {
   res.send("Backend Running 🚀");
 });

@@ -334,59 +334,6 @@ exports.updateApplicationStatus = (req, res) => {
 };
 
 
-// ===============================
-// GET COMPANY INVITES (stub - no campus drive table)
-// ===============================
-exports.getCompanyInvites = (req, res) => {
-  return res.json([]);
-};
-
-
-// ===============================
-// ACCEPT INVITE (stub - no campus drive table)
-// ===============================
-exports.acceptInvite = (req, res) => {
-  return res.status(404).json({ message: "Invite feature not available" });
-};
-
-
-// ===============================
-// REJECT INVITE (stub - no campus drive table)
-// ===============================
-exports.rejectInvite = (req, res) => {
-  return res.status(404).json({ message: "Invite feature not available" });
-};
-
-
-// ===============================
-// CREATE JOB FROM DRIVE
-// ===============================
-exports.createJobFromDrive = (req, res) => {
-  const user_id = req.user.user_id;
-  const { drive_id, title, description, skills } = req.body;
-
-  db.query("SELECT * FROM company WHERE user_id = ?", [user_id], (err, compRes) => {
-    if (err) return res.status(500).json(err);
-
-    const company = compRes[0];
-
-    const query = `
-      INSERT INTO jobs
-      (company_id, title, description, skills_required, job_mode, drive_id, status)
-      VALUES (?, ?, ?, ?, 'TPO', ?, 'active')
-    `;
-
-    db.query(query, [company.company_id, title, description, skills, drive_id], (err, result) => {
-      if (err) return res.status(500).json(err);
-
-      res.json({
-        message: "Job created for drive",
-        job_id: result.insertId
-      });
-    });
-  });
-};
-
 
 // ===============================
 // GET PROFILE STATUS

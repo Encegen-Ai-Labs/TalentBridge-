@@ -38,16 +38,4 @@ router.put(
   companyController.updateApplicationStatus
 );
 
-// INVITES
-router.get("/invites", verifyToken, companyController.getCompanyInvites);
-
-// ACCEPT
-router.post("/accept-invite", verifyToken, companyController.acceptInvite);
-
-// REJECT
-router.post("/reject-invite", verifyToken, companyController.rejectInvite);
-
-//create drive
-router.post("/create-job-drive", verifyToken, companyController.createJobFromDrive);
-
 module.exports = router;

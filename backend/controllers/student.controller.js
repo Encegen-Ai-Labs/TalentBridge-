@@ -156,37 +156,6 @@ exports.updateProfile = (req, res) => {
     });
   });
 };
-// GET SHARED JOBS
-exports.getSharedJobs = (req, res) => {
-
-  const user_id = req.user.user_id;
-
-  const studentQuery = `
-    SELECT * FROM student 
-    WHERE user_id = ? AND approval_status = 'approved'
-  `;
-
-  db.query(studentQuery, [user_id], (err, studentRes) => {
-    if (studentRes.length === 0) return res.json([]);
-
-    const student = studentRes[0];
-
-    const query = `
-      SELECT j.*, c.company_name
-      FROM tpo_shared_jobs tsj
-      JOIN jobs j ON tsj.job_id = j.job_id
-      JOIN company c ON j.company_id = c.company_id
-      JOIN shared_job_branches sjb ON tsj.id = sjb.shared_job_id
-      WHERE tsj.college_id = ?
-      AND sjb.branch = ?
-      AND tsj.status = 'active'
-    `;
-
-    db.query(query, [student.college_id, student.branch], (err, result) => {
-      res.json(result);
-    });
-  });
-};
 
 // GET PREFERENCES
 exports.getPreferences = (req, res) => {

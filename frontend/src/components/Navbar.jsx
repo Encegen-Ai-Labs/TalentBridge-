@@ -101,10 +101,6 @@ const handleSearch = (e) => {
                   Applicants
                 </Link>
 
-                <Link to="/company/invites" className="nav-link">
-                  Campus Drives
-                </Link>
-
                 
               </>
             ) : (
@@ -301,10 +297,6 @@ const handleSearch = (e) => {
 
               <Link to="/company/applicants" onClick={closeMobileMenu}>
                 Applicants
-              </Link>
-
-              <Link to="/company/invites" onClick={closeMobileMenu}>
-                Campus Drives
               </Link>
 
               <Link to="/company/profile" onClick={closeMobileMenu}>
