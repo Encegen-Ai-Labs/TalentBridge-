@@ -1,6 +1,7 @@
 const db = require("../config/db");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const crypto = require("crypto");
 
 // ================= REGISTER =================
 
@@ -374,15 +375,39 @@ exports.registerCompany = async (req, res) => {
 // ================= FORGOT PASSWORD =================
 exports.forgotPassword = async (req, res) => {
   const { email } = req.body;
+
   if (!email || !email.trim()) {
     return res.status(400).json({ message: "Email is required" });
   }
 
-  db.query("SELECT * FROM users WHERE email = ?", [email.trim()], (err, result) => {
-    if (err) return res.status(500).json({ message: "Database error" });
-    // Always return success to prevent email enumeration
+  try {
+    const [userResult] = await db.promise().query(
+      "SELECT * FROM users WHERE email = ?",
+      [email.trim()]
+    );
+
+    if (userResult.length === 0) {
+      return res.status(200).json({
+        message: "If this email exists, an OTP has been sent."
+      });
+    }
+
+    const otp_code = crypto.randomInt(100000, 1000000).toString();
+    const expires_at = new Date(Date.now() + 10 * 60 * 1000);
+
+    await db.promise().query(
+      "INSERT INTO otp_resets (email, otp_code, expires_at) VALUES (?, ?, ?)",
+      [email.trim(), otp_code, expires_at]
+    );
+
     return res.status(200).json({
-      message: "If this email exists, a reset link has been sent."
+      message: "OTP generated successfully",
+      otp_code,
+      expires_at
     });
-  });
-};
+
+  } catch (err) {
+    console.error("Error in forgotPassword:", err);
+    return res.status(500).json({ message: "Database error generating OTP", error: err.message });
+  }
+};
