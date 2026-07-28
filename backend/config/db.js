@@ -27,15 +27,9 @@ db.getConnection((err, connection) => {
       return;
     }
 
-    db.changeUser({ database: dbName }, (err) => {
-      if (err) {
-        console.error(`Failed to select database ${dbName}:`, err);
-        return;
-      }
-      console.log(`Using Database: ${dbName}`);
-      const { initTables } = require("./initDb");
-      initTables(db);
-    });
+    console.log(`Using Database: ${dbName}`);
+    const { initTables } = require("./initDb");
+    initTables(db);
   });
 });
 
