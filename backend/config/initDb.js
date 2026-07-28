@@ -9,6 +9,7 @@ const queries = [
     mobile_number VARCHAR(15),
     work_status VARCHAR(50)
   )`,
+
   `CREATE TABLE IF NOT EXISTS company (
     company_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT,
@@ -88,7 +89,14 @@ const queries = [
     FOREIGN KEY (student_id) REFERENCES student(student_id) ON DELETE CASCADE,
     FOREIGN KEY (company_id) REFERENCES company(company_id) ON DELETE CASCADE,
     FOREIGN KEY (job_id) REFERENCES jobs(job_id) ON DELETE CASCADE
-  )`
+  )`,
+  `CREATE TABLE IF NOT EXISTS otp_resets (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  email VARCHAR(255) NOT NULL,
+  otp_code VARCHAR(6) NOT NULL,
+  expires_at DATETIME NOT NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+)`
 ];
 
 function initTables(db) {
