@@ -1,8 +1,8 @@
 const db = require("../config/db");
 
 // CREATE STUDENT PROFILE
-exports.createStudentProfile = (req, res) => {
-  const user_id = req.user.user_id; // from JWT
+exports.createStudentProfile = async (req, res) => {
+  const user_id = req.user.user_id;
   const { skills, branch, year, college_id } = req.body;
 
   if (!skills || !branch || !year) {
@@ -11,11 +11,10 @@ exports.createStudentProfile = (req, res) => {
     });
   }
 
-  // Check if profile already exists
-  const checkQuery = "SELECT * FROM student WHERE user_id = ?";
-  
-  db.query(checkQuery, [user_id], (err, result) => {
-    if (err) return res.status(500).json(err);
+  try {
+    // Check if profile already exists
+    const checkQuery = "SELECT * FROM student WHERE user_id = ?";
+    const [result] = await db.promise().query(checkQuery, [user_id]);
 
     if (result.length > 0) {
       return res.status(400).json({
@@ -29,22 +28,22 @@ exports.createStudentProfile = (req, res) => {
       VALUES (?, ?, ?, ?, ?)
     `;
 
-    db.query(
+    const [insertResult] = await db.promise().query(
       insertQuery,
-      [user_id, college_id || null, skills, branch, year],
-      (err, result) => {
-        if (err) return res.status(500).json(err);
-
-        return res.status(201).json({
-          message: "Student profile created successfully",
-          student_id: result.insertId
-        });
-      }
+      [user_id, college_id || null, skills, branch, year]
     );
-  });
+
+    return res.status(201).json({
+      message: "Student profile created successfully",
+      student_id: insertResult.insertId
+    });
+
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
 // GET STUDENT PROFILE
-exports.getStudentProfile = (req, res) => {
+exports.getStudentProfile = async (req, res) => {
   const user_id = req.user.user_id;
 
   const query = `
@@ -55,11 +54,8 @@ exports.getStudentProfile = (req, res) => {
     WHERE u.user_id = ?
   `;
 
-  db.query(query, [user_id], (err, results) => {
-    if (err) {
-      console.error("GET PROFILE ERROR:", err);
-      return res.status(500).json({ message: "Failed to retrieve profile data" });
-    }
+  try {
+    const [results] = await db.promise().query(query, [user_id]);
 
     if (results.length === 0) {
       return res.status(404).json({ message: "User not found" });
@@ -92,7 +88,11 @@ exports.getStudentProfile = (req, res) => {
         resume_data: resumeData
       }
     });
-  });
+
+  } catch (err) {
+    console.error("GET PROFILE ERROR:", err);
+    return res.status(500).json({ message: "Failed to retrieve profile data" });
+  }
 };
 
 function safeParseJson(value) {
@@ -104,9 +104,8 @@ function safeParseJson(value) {
     return null;
   }
 }
-
 // UPDATE STUDENT PROFILE
-exports.updateProfile = (req, res) => {
+exports.updateProfile = async (req, res) => {
   const user_id = req.user.user_id;
   const { name, mobile_number, skills, branch, year, resume_data, resume_url, work_status } = req.body;
   const parsedResumeData = safeParseJson(resume_data) || {};
@@ -118,51 +117,42 @@ exports.updateProfile = (req, res) => {
   const updateUserQuery = `UPDATE users SET name = ?, mobile_number = ?, work_status = ? WHERE user_id = ?`;
   const userValues = [name || null, mobile_number || null, work_status || null, user_id];
 
-  db.query(updateUserQuery, userValues, (userErr) => {
-    if (userErr) {
-      console.error('UPDATE USER PROFILE ERROR:', userErr);
-      return res.status(500).json({ message: 'Failed to update user profile' });
+  try {
+    await db.promise().query(updateUserQuery, userValues);
+
+    const [selectResult] = await db.promise().query(
+      'SELECT * FROM student WHERE user_id = ?',
+      [user_id]
+    );
+
+    const studentFields = ['branch = ?', 'year = ?', 'skills = ?', 'resume_url = ?', 'resume_data = ?'];
+    const studentValues = [branch || null, year || null, skills || null, resume_url || null, JSON.stringify(parsedResumeData)];
+
+    if (selectResult.length > 0) {
+      const updateStudentQuery = `UPDATE student SET ${studentFields.join(', ')} WHERE user_id = ?`;
+      studentValues.push(user_id);
+      await db.promise().query(updateStudentQuery, studentValues);
+      return res.json({ message: 'Profile updated successfully' });
+    } else {
+      const insertStudentQuery = `INSERT INTO student (user_id, branch, year, skills, resume_url, resume_data) VALUES (?, ?, ?, ?, ?, ?)`;
+      await db.promise().query(insertStudentQuery, [user_id, branch || null, year || null, skills || null, resume_url || null, JSON.stringify(parsedResumeData)]);
+      return res.json({ message: 'Profile created successfully' });
     }
 
-    db.query('SELECT * FROM student WHERE user_id = ?', [user_id], (selectErr, selectResult) => {
-      if (selectErr) {
-        console.error('SELECT STUDENT PROFILE ERROR:', selectErr);
-        return res.status(500).json({ message: 'Failed to update student profile' });
-      }
-
-      const studentFields = ['branch = ?', 'year = ?', 'skills = ?', 'resume_url = ?', 'resume_data = ?'];
-      const studentValues = [branch || null, year || null, skills || null, resume_url || null, JSON.stringify(parsedResumeData)];
-
-      if (selectResult.length > 0) {
-        const updateStudentQuery = `UPDATE student SET ${studentFields.join(', ')} WHERE user_id = ?`;
-        studentValues.push(user_id);
-        db.query(updateStudentQuery, studentValues, (studentErr) => {
-          if (studentErr) {
-            console.error('UPDATE STUDENT PROFILE ERROR:', studentErr);
-            return res.status(500).json({ message: 'Failed to update student profile' });
-          }
-          return res.json({ message: 'Profile updated successfully' });
-        });
-      } else {
-        const insertStudentQuery = `INSERT INTO student (user_id, branch, year, skills, resume_url, resume_data) VALUES (?, ?, ?, ?, ?, ?)`;
-        db.query(insertStudentQuery, [user_id, branch || null, year || null, skills || null, resume_url || null, JSON.stringify(parsedResumeData)], (insertErr) => {
-          if (insertErr) {
-            console.error('INSERT STUDENT PROFILE ERROR:', insertErr);
-            return res.status(500).json({ message: 'Failed to create student profile' });
-          }
-          return res.json({ message: 'Profile created successfully' });
-        });
-      }
-    });
-  });
+  } catch (err) {
+    console.error('UPDATE STUDENT PROFILE ERROR:', err);
+    return res.status(500).json({ message: 'Failed to update student profile' });
+  }
 };
-
 // GET PREFERENCES
-exports.getPreferences = (req, res) => {
+exports.getPreferences = async (req, res) => {
   const user_id = req.user.user_id;
 
-  db.query("SELECT preferences FROM student WHERE user_id = ?", [user_id], (err, result) => {
-    if (err) return res.status(500).json(err);
+  try {
+    const [result] = await db.promise().query(
+      "SELECT preferences FROM student WHERE user_id = ?",
+      [user_id]
+    );
 
     if (result.length === 0) {
       return res.json({ preferences: null });
@@ -174,11 +164,13 @@ exports.getPreferences = (req, res) => {
     } catch (e) {
       return res.json({ preferences: null });
     }
-  });
-};
 
+  } catch (err) {
+    return res.status(500).json(err);
+  }
+};
 // UPDATE PREFERENCES
-exports.updatePreferences = (req, res) => {
+exports.updatePreferences = async (req, res) => {
   const user_id = req.user.user_id;
   const { preferences } = req.body;
 
@@ -188,53 +180,54 @@ exports.updatePreferences = (req, res) => {
 
   const prefString = typeof preferences === 'string' ? preferences : JSON.stringify(preferences);
 
-  // Check if profile exists, if not create one
-  db.query("SELECT * FROM student WHERE user_id = ?", [user_id], (err, result) => {
-    if (err) return res.status(500).json(err);
+  try {
+    const [result] = await db.promise().query(
+      "SELECT * FROM student WHERE user_id = ?",
+      [user_id]
+    );
 
     if (result.length === 0) {
-      // Create student profile with default values and approved status
       const insertQuery = `
         INSERT INTO student (user_id, approval_status, preferences)
         VALUES (?, 'approved', ?)
       `;
-      db.query(insertQuery, [user_id, prefString], (err) => {
-        if (err) return res.status(500).json(err);
-        return res.json({ message: "Preferences created successfully" });
-      });
+      await db.promise().query(insertQuery, [user_id, prefString]);
+      return res.json({ message: "Preferences created successfully" });
     } else {
       const updateQuery = `
         UPDATE student
         SET preferences = ?
         WHERE user_id = ?
       `;
-      db.query(updateQuery, [prefString, user_id], (err) => {
-        if (err) return res.status(500).json(err);
-        return res.json({ message: "Preferences updated successfully" });
-      });
+      await db.promise().query(updateQuery, [prefString, user_id]);
+      return res.json({ message: "Preferences updated successfully" });
     }
-  });
+
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
 
 // SAVE JOB (add to preferences.savedJobs)
-exports.saveJob = (req, res) => {
+exports.saveJob = async (req, res) => {
   const user_id = req.user.user_id;
   const jobId = req.params.jobId;
 
   if (!jobId) return res.status(400).json({ message: 'Job id required' });
 
-  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
-    if (err) return res.status(500).json(err);
+  try {
+    const [result] = await db.promise().query(
+      'SELECT preferences FROM student WHERE user_id = ?',
+      [user_id]
+    );
 
     let preferences = {};
+
     if (result.length === 0) {
-      // create student row with preferences
       preferences = { savedJobs: [jobId], hiddenJobs: [] };
       const insertQuery = `INSERT INTO student (user_id, approval_status, preferences) VALUES (?, 'approved', ?)`;
-      db.query(insertQuery, [user_id, JSON.stringify(preferences)], (err) => {
-        if (err) return res.status(500).json(err);
-        return res.json({ savedJobs: preferences.savedJobs });
-      });
+      await db.promise().query(insertQuery, [user_id, JSON.stringify(preferences)]);
+      return res.json({ savedJobs: preferences.savedJobs });
     } else {
       try {
         preferences = result[0].preferences ? JSON.parse(result[0].preferences) : {};
@@ -245,32 +238,35 @@ exports.saveJob = (req, res) => {
       preferences.savedJobs = preferences.savedJobs || [];
       if (!preferences.savedJobs.includes(String(jobId))) preferences.savedJobs.unshift(String(jobId));
       const updateQuery = `UPDATE student SET preferences = ? WHERE user_id = ?`;
-      db.query(updateQuery, [JSON.stringify(preferences), user_id], (err) => {
-        if (err) return res.status(500).json(err);
-        return res.json({ savedJobs: preferences.savedJobs });
-      });
+      await db.promise().query(updateQuery, [JSON.stringify(preferences), user_id]);
+      return res.json({ savedJobs: preferences.savedJobs });
     }
-  });
+
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
 
 // HIDE JOB (add to preferences.hiddenJobs and remove from savedJobs)
-exports.hideJob = (req, res) => {
+exports.hideJob = async (req, res) => {
   const user_id = req.user.user_id;
   const jobId = req.params.jobId;
 
   if (!jobId) return res.status(400).json({ message: 'Job id required' });
 
-  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
-    if (err) return res.status(500).json(err);
+  try {
+    const [result] = await db.promise().query(
+      'SELECT preferences FROM student WHERE user_id = ?',
+      [user_id]
+    );
 
     let preferences = {};
+
     if (result.length === 0) {
       preferences = { savedJobs: [], hiddenJobs: [jobId] };
       const insertQuery = `INSERT INTO student (user_id, approval_status, preferences) VALUES (?, 'approved', ?)`;
-      db.query(insertQuery, [user_id, JSON.stringify(preferences)], (err) => {
-        if (err) return res.status(500).json(err);
-        return res.json({ hiddenJobs: preferences.hiddenJobs });
-      });
+      await db.promise().query(insertQuery, [user_id, JSON.stringify(preferences)]);
+      return res.json({ hiddenJobs: preferences.hiddenJobs });
     } else {
       try {
         preferences = result[0].preferences ? JSON.parse(result[0].preferences) : {};
@@ -280,69 +276,96 @@ exports.hideJob = (req, res) => {
 
       preferences.savedJobs = preferences.savedJobs || [];
       preferences.hiddenJobs = preferences.hiddenJobs || [];
-      // remove from saved if present
       preferences.savedJobs = preferences.savedJobs.filter(id => String(id) !== String(jobId));
       if (!preferences.hiddenJobs.includes(String(jobId))) preferences.hiddenJobs.unshift(String(jobId));
 
       const updateQuery = `UPDATE student SET preferences = ? WHERE user_id = ?`;
-      db.query(updateQuery, [JSON.stringify(preferences), user_id], (err) => {
-        if (err) return res.status(500).json(err);
-        return res.json({ hiddenJobs: preferences.hiddenJobs });
-      });
+      await db.promise().query(updateQuery, [JSON.stringify(preferences), user_id]);
+      return res.json({ hiddenJobs: preferences.hiddenJobs });
     }
-  });
+
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
 
 // GET SAVED JOBS
-exports.getSavedJobs = (req, res) => {
+exports.getSavedJobs = async (req, res) => {
   const user_id = req.user.user_id;
-  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
-    if (err) return res.status(500).json(err);
+
+  try {
+    const [result] = await db.promise().query(
+      'SELECT preferences FROM student WHERE user_id = ?',
+      [user_id]
+    );
+
     if (result.length === 0) return res.json({ savedJobs: [] });
+
     try {
       const prefs = result[0].preferences ? JSON.parse(result[0].preferences) : {};
       return res.json({ savedJobs: prefs.savedJobs || [] });
     } catch (e) {
       return res.json({ savedJobs: [] });
     }
-  });
+
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
 
 // GET HIDDEN JOBS
-exports.getHiddenJobs = (req, res) => {
+exports.getHiddenJobs = async (req, res) => {
   const user_id = req.user.user_id;
-  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
-    if (err) return res.status(500).json(err);
+
+  try {
+    const [result] = await db.promise().query(
+      'SELECT preferences FROM student WHERE user_id = ?',
+      [user_id]
+    );
+
     if (result.length === 0) return res.json({ hiddenJobs: [] });
+
     try {
       const prefs = result[0].preferences ? JSON.parse(result[0].preferences) : {};
       return res.json({ hiddenJobs: prefs.hiddenJobs || [] });
     } catch (e) {
       return res.json({ hiddenJobs: [] });
     }
-  });
+
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
 
 // REMOVE SAVED JOB
-exports.removeSavedJob = (req, res) => {
+exports.removeSavedJob = async (req, res) => {
   const user_id = req.user.user_id;
   const jobId = req.params.jobId;
+
   if (!jobId) return res.status(400).json({ message: 'Job id required' });
 
-  db.query('SELECT preferences FROM student WHERE user_id = ?', [user_id], (err, result) => {
-    if (err) return res.status(500).json(err);
+  try {
+    const [result] = await db.promise().query(
+      'SELECT preferences FROM student WHERE user_id = ?',
+      [user_id]
+    );
+
     if (result.length === 0) return res.json({ savedJobs: [] });
+
     let preferences = {};
     try {
       preferences = result[0].preferences ? JSON.parse(result[0].preferences) : {};
     } catch (e) {
       preferences = {};
     }
+
     preferences.savedJobs = (preferences.savedJobs || []).filter(id => String(id) !== String(jobId));
+
     const updateQuery = `UPDATE student SET preferences = ? WHERE user_id = ?`;
-    db.query(updateQuery, [JSON.stringify(preferences), user_id], (err) => {
-      if (err) return res.status(500).json(err);
-      return res.json({ savedJobs: preferences.savedJobs });
-    });
-  });
+    await db.promise().query(updateQuery, [JSON.stringify(preferences), user_id]);
+    return res.json({ savedJobs: preferences.savedJobs });
+
+  } catch (err) {
+    return res.status(500).json(err);
+  }
 };
