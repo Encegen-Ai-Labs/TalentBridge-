@@ -25,6 +25,9 @@ app.use("/api/jobs", jobRoutes);
 const applicationRoutes = require("./routes/application.routes");
 app.use("/api/applications", applicationRoutes);
 
+const notificationRoutes = require("./routes/notification.routes");
+app.use("/api/notifications", notificationRoutes);
+
 app.get("/", (req, res) => {
   res.send("Backend Running 🚀");
 });

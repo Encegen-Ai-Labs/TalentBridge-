@@ -387,12 +387,58 @@ export const removeSavedJob = async (jobId) => {
   const token = localStorage.getItem('token');
   const response = await fetch(`${BASE_URL}/student/saved/${jobId}`, {
     method: 'DELETE',
-    headers: { 
-      Authorization: `Bearer ${token}`, 
-      'Content-Type': 'application/json' 
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
     },
   });
   const data = await response.json();
   if (!response.ok) throw new Error(data.message || 'Failed to remove saved job');
   return data.savedJobs;
+};
+
+// ============================================
+// NOTIFICATION SERVICES
+// ============================================
+
+export const getNotifications = async () => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BASE_URL}/notifications`, {
+    method: 'GET',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to fetch notifications');
+  return data;
+};
+
+export const markNotificationAsRead = async (notificationId) => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BASE_URL}/notifications/${notificationId}/read`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to mark notification as read');
+  return data;
+};
+
+export const markAllNotificationsAsRead = async () => {
+  const token = localStorage.getItem('token');
+  const response = await fetch(`${BASE_URL}/notifications/read-all`, {
+    method: 'PUT',
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+  });
+  const data = await response.json();
+  if (!response.ok) throw new Error(data.message || 'Failed to mark all notifications as read');
+  return data;
 };
