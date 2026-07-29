@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { getNotifications, markNotificationAsRead, markAllNotificationsAsRead } from '../services/api';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -8,10 +9,14 @@ const Navbar = () => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const navigate = useNavigate();
   const location = useLocation();
   const dropdownRef = useRef(null);
+  const notifRef = useRef(null);
 
   // Check auth
   useEffect(() => {
@@ -49,10 +54,67 @@ const Navbar = () => {
     };
   }, []);
 
+  // Close notification dropdown outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (
+        notifRef.current &&
+        !notifRef.current.contains(event.target)
+      ) {
+        setNotifOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   // Close mobile menu on route change
   useEffect(() => {
     setMobileMenuOpen(false);
   }, [location]);
+
+  const fetchNotifications = async () => {
+    try {
+      const data = await getNotifications();
+      setNotifications(data.notifications);
+      setUnreadCount(data.unread_count);
+    } catch {
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  };
+
+  // Load notifications when logged in
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchNotifications();
+    } else {
+      setNotifications([]);
+      setUnreadCount(0);
+    }
+  }, [isLoggedIn]);
+
+  const handleNotifClick = async (notificationId) => {
+    try {
+      await markNotificationAsRead(notificationId);
+      fetchNotifications();
+    } catch (err) {
+      console.error('Failed to mark notification as read:', err);
+    }
+  };
+
+  const handleMarkAllRead = async () => {
+    try {
+      await markAllNotificationsAsRead();
+      fetchNotifications();
+    } catch (err) {
+      console.error('Failed to mark all notifications as read:', err);
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
@@ -138,6 +200,53 @@ const handleSearch = (e) => {
                      />
                   </div>
                 )}
+
+                <div className="notif-menu" ref={notifRef}>
+
+                  <div
+                    className="notif-icon"
+                    onClick={() => setNotifOpen(!notifOpen)}
+                  >
+                    🔔
+                    {unreadCount > 0 && (
+                      <span className="notif-badge">{unreadCount}</span>
+                    )}
+                  </div>
+
+                  {notifOpen && (
+                    <div className="notif-dropdown">
+
+                      <div className="dropdown-header">
+                        <strong>Notifications</strong>
+                        {unreadCount > 0 && (
+                          <button
+                            className="mark-all-read-btn"
+                            onClick={handleMarkAllRead}
+                          >
+                            Mark all read
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="dropdown-divider"></div>
+
+                      {notifications.length === 0 ? (
+                        <div className="notif-empty">No notifications</div>
+                      ) : (
+                        notifications.map((n) => (
+                          <div
+                            key={n.notification_id}
+                            className={`notif-item ${n.is_read ? '' : 'notif-unread'}`}
+                            onClick={() => handleNotifClick(n.notification_id)}
+                          >
+                            {n.message}
+                          </div>
+                        ))
+                      )}
+
+                    </div>
+                  )}
+                </div>
 
                 <div className="profile-menu" ref={dropdownRef}>
 
@@ -323,6 +432,34 @@ const handleSearch = (e) => {
 
           {isLoggedIn ? (
             <>
+              <div className="mobile-notif-header">
+                <span>Notifications{unreadCount > 0 ? ` (${unreadCount})` : ''}</span>
+                {unreadCount > 0 && (
+                  <button
+                    className="mark-all-read-btn"
+                    onClick={handleMarkAllRead}
+                  >
+                    Mark all read
+                  </button>
+                )}
+              </div>
+
+              {notifications.length === 0 ? (
+                <div className="notif-empty">No notifications</div>
+              ) : (
+                notifications.map((n) => (
+                  <div
+                    key={n.notification_id}
+                    className={`notif-item ${n.is_read ? '' : 'notif-unread'}`}
+                    onClick={() => handleNotifClick(n.notification_id)}
+                  >
+                    {n.message}
+                  </div>
+                ))
+              )}
+
+              <hr />
+
               {user?.role !== 'company' && (
                 <>
                   <Link

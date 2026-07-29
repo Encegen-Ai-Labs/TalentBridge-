@@ -307,10 +307,11 @@ exports.updateApplicationStatus = (req, res) => {
   }
 
   const query = `
-    SELECT a.*, j.company_id
+    SELECT a.*, j.company_id, s.user_id AS student_user_id
     FROM applications a
     JOIN jobs j ON a.job_id = j.job_id
     JOIN company c ON j.company_id = c.company_id
+    JOIN student s ON a.student_id = s.student_id
     WHERE a.application_id = ? AND c.user_id = ?
   `;
 
@@ -326,6 +327,15 @@ exports.updateApplicationStatus = (req, res) => {
       [status, application_id],
       (err) => {
         if (err) return res.status(500).json(err);
+
+        const studentUserId = result[0].student_user_id;
+        db.query(
+          `INSERT INTO notifications (user_id, message, type) VALUES (?, ?, ?)`,
+          [studentUserId, `Your application status was updated to ${status}`, "application_status"],
+          (notifErr) => {
+            if (notifErr) console.error("Error creating notification:", notifErr);
+          }
+        );
 
         res.json({ message: `Status updated to ${status}` });
       }

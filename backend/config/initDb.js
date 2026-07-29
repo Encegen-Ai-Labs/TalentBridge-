@@ -90,6 +90,15 @@ const queries = [
     FOREIGN KEY (company_id) REFERENCES company(company_id) ON DELETE CASCADE,
     FOREIGN KEY (job_id) REFERENCES jobs(job_id) ON DELETE CASCADE
   )`,
+  `CREATE TABLE IF NOT EXISTS notifications (
+    notification_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    message VARCHAR(255),
+    type VARCHAR(50),
+    is_read BOOLEAN DEFAULT false,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
+  )`,
   `CREATE TABLE IF NOT EXISTS otp_resets (
   id INT AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(255) NOT NULL,
