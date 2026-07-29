@@ -335,3 +335,46 @@ exports.forgotPassword = async (req, res) => {
     return res.status(500).json({ message: "Database error generating OTP", error: err.message });
   }
 };
+
+
+// ================= RESET PASSWORD =================
+exports.resetPassword = async (req, res) => {
+  const { email, otp_code, new_password } = req.body;
+
+  if (!email || !otp_code || !new_password) {
+    return res.status(400).json({ message: "Email, OTP, and new password are required" });
+  }
+
+  try {
+    // 1. Check OTP exists, matches email, and is not expired
+    const [otpResult] = await db.promise().query(
+      "SELECT * FROM otp_resets WHERE email = ? AND otp_code = ? AND expires_at > NOW()",
+      [email.trim(), otp_code]
+    );
+
+    if (otpResult.length === 0) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // 2. Hash the new password
+    const hashedPassword = await bcrypt.hash(new_password, 10);
+
+    // 3. Update password in users table
+    await db.promise().query(
+      "UPDATE users SET password_hash = ? WHERE email = ?",
+      [hashedPassword, email.trim()]
+    );
+
+    // 4. Delete the OTP record
+    await db.promise().query(
+      "DELETE FROM otp_resets WHERE email = ? AND otp_code = ?",
+      [email.trim(), otp_code]
+    );
+
+    return res.status(200).json({ message: "Password reset successfully" });
+
+  } catch (err) {
+    console.error("Error in resetPassword:", err);
+    return res.status(500).json({ message: "Server error", error: err.message });
+  }
+};
